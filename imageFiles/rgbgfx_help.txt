@@ -1,2 +1,0 @@
-Use to convert png to 2bpp:
-rgbgfx -u -o GrassyTiles.2bpp GrassyTiles.png
