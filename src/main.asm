@@ -12,6 +12,7 @@ include "GrassyTiles.inc"
 include "HillMiddle.inc"
 include "HillSide.inc"
 include "HillsMap.inc"
+include "structs.asm"
 
 ; Variable banks
 include "globals.inc"
