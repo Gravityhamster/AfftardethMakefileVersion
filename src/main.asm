@@ -7,15 +7,6 @@
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
 
-; Resources
-include "HillMiddle.inc"
-include "HillSide.inc"
-include "HillsMap.inc"
-include "structs.asm"
-
-; Variable banks
-include "globals.inc"
-
 ; SETUP - Allocates for GB logo (?)
 SECTION "Header", ROM0[$100]
 
@@ -820,8 +811,8 @@ HLTimes32:
 
 SECTION "Graphics", ROM0
 
-; Start of tile array.
-GrassyTiles:
-    INCBIN "GrassyTiles.2bpp"
+; Grassy tile data
+GrassyTiles::
+    INCBIN "res/GrassyTiles.2bpp"
     .end:
 
