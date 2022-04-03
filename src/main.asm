@@ -1,8 +1,8 @@
 ; ROM start
 
-; -------------------------------------------------------------------------------------------------------------------
-; INCLUDE -----------------------------------------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
+; -------
+; INCLUDE
+; -------
 
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
@@ -16,24 +16,21 @@ include "HillsMap.inc"
 ; Variable banks
 include "globals.inc"
 
-; -------------------------------------------------------------------------------------------------------------------
-; SETUP - Allocates for GB logo (?) ---------------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
+; SETUP - Allocates for GB logo (?)
 SECTION "Header", ROM0[$100]
 
-    ; Goto main
     jp main
+    ; Write zeros until at address 150
+    ds $150 - @
 
-; -------------------------------------------------------------------------------------------------------------------
-; START -------------------------------------------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
+; START
 SECTION "Game code", ROM0[$150]
 
 def ScrX = 0
 
-; -------------------------------------------------------------------------------
+; ---------------------------------------
 ; Main - This is where the program starts
-; -------------------------------------------------------------------------------
+; ---------------------------------------
 main:
 
     ; Set map x
@@ -58,67 +55,25 @@ main:
     ; Turn on the LCD
     call enableLCD
 
-    ;; Initiate the all purpose game clock
-    ; call setClock
-
     ; Loop the game
     jp gameLoop
 
-; -------------------------------------------------------------------------------
+; ---------------------------------------------
 ; gameLoop - This is where the gameLoop happens
-; -------------------------------------------------------------------------------
+; ---------------------------------------------
 gameLoop:
     ; Update the joypad
     call updateJoypadState
-    ; Advance to timer
-    call decTimer
-    ; Call only if zero
-    ;jp z, .clockCycle
-    ; Loop
-    ;jp gameLoop
-;.clockCycle:
-    ; Reset clock
-    call setClock
     ; Move the screen
     call moveViewPortx1y1
     ; Loop
     jp gameLoop
+    
+; -----------------------------------------
+; Function definitions - Viewport Functions
+; -----------------------------------------
 
-; -------------------------------------------------------------------------------------------------------------------
-; Function definitions - Utility Functions --------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
-
-; -------------------------------------------------------------------------------
-; Initialize the clock
-; -------------------------------------------------------------------------------
-setClock:
-    ; Set time
-    ld a, 1 ; clocks
-    ld [timeSet], a
-    ld [timer], a
-    ; Return to code
-    ret
-
-; -------------------------------------------------------------------------------
-; Decrease the timer by one - Flag Z is set if one game period has completed
-; -------------------------------------------------------------------------------
-decTimer:
-    ; Get the timer
-    ld a, [timer]
-    ; Dec reg - Z set if complete
-    dec a
-    ; Write timer
-    ld [timer], a
-    ; Return to code
-    ret
-
-; -------------------------------------------------------------------------------------------------------------------
-; Function definitions - Viewport Functions -------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
-
-; -------------------------------------------------------------------------------
 ; Move the viewport
-; -------------------------------------------------------------------------------
 moveViewPortx1y1:    
     ; Wait for VBlank, otherwise screen dies in a fire (glitchiness)
 .waitForVBlank:
@@ -267,9 +222,7 @@ moveViewPortx1y1:
     ; Return to code
     ret
 
-; -------------------------------------------------------------------------------
 ; Get top and to the right
-; -------------------------------------------------------------------------------
 getNextColumnRight:
 
     ; Load memX into BC
@@ -296,7 +249,7 @@ getNextColumnRight:
     
 .skipInc:
 
-    ; Setting DE -----------------------------------------------------------------------------------
+    ; Setting DE
 
     ; Load the location into DE
     ld de, HillsMapTilemap + $14
@@ -308,48 +261,9 @@ getNextColumnRight:
     ld d, h
     ld e, l
 
-    /*; Everything past here involves adding the Y source amount:
-    
-    ; Get screen position --YYYYYYYYYYYYYYY--
-    ld a, [$FF42]
-    ; Divide by 8
-    sra a
-    sra a
-    sra a
-    ; Clear bad sign bits
-    and a, %00011111
-
-    ; Set BC to the screen offset: floor ( Screen position / 8 )
-    ld b, 0
-    ld c, a
-
-    ; If it is 0, we can skip it
-    ld a, b
-    or a, c
-    jp z, .loopSkip
-
-    ; Add the map width to de for floor(y/8) of the screen
-.loopY:
-    ; Add mapX to the HL
-    ld a, [mapX]
-    ld h, a
-    ld a, [mapX+1]
-    ld l, a
-
-    ; Add de to hl
-    add hl, de
-    ; Load hl into de
-    ld d, h
-    ld e, l
-    
-    ; Decrement BC and check if we should loop again
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, .loopY*/
 .loopSkip:
 
-    ; Setting HL -----------------------------------------------------------------------------------
+    ; Setting HL
 
     ; Get screen position
     ld a, [$FF43]
@@ -384,33 +298,10 @@ getNextColumnRight:
 
 .c:
 
-    /*; Everything past here involves adding the Y source amount:
-
-    ; Get screen position --YYYYYYYYYYYYYYY--
-    ld a, [$FF42]
-    ; Divide by 8
-    sra a
-    sra a
-    sra a
-    ; Clear bad sign bits
-    and a, %00011111
-
-    ; Set BC to the screen offset: floor ( Screen position / 8 )
-    ld b, 0
-    ld c, a
-
-    ; Multiply by 32
-    call BCTimes32
-
-    ; Add BC to HL
-    add hl, bc*/
-
     ; Draw the entire column
     jp drawColumn
 
-; -------------------------------------------------------------------------------
 ; Get top and to the Left
-; -------------------------------------------------------------------------------
 getNextColumnLeft:
 
     ; Load memX into BC
@@ -432,7 +323,7 @@ getNextColumnLeft:
 
 .zz:
 
-    ; Setting DE -----------------------------------------------------------------------------------
+    ; Setting DE
 
     ; Load the location into DE
     ld de, HillsMapTilemap
@@ -444,48 +335,7 @@ getNextColumnLeft:
     ld d, h
     ld e, l
 
-    /*; Everything past here involves adding the Y source amount:
-    
-    ; Get screen position --YYYYYYYYYYYYYYY--
-    ld a, [$FF42]
-    ; Divide by 8
-    sra a
-    sra a
-    sra a
-    ; Clear bad sign bits
-    and a, %00011111
-
-    ; Set BC to the screen offset: floor ( Screen position / 8 )
-    ld b, 0
-    ld c, a
-
-    ; If it is 0, we can skip it
-    ld a, b
-    or a, c
-    jp z, .loopSkip
-
-    ; Add the map width to de for the y position of the screen
-.loopY:
-    ; Add mapX to the HL
-    ld a, [mapX]
-    ld h, a
-    ld a, [mapX+1]
-    ld l, a
-
-    ; Add de to hl
-    add hl, de
-    ; Load hl into de
-    ld d, h
-    ld e, l
-    
-    ; Decrement BC and check if we should loop again
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, .loopY
-.loopSkip:*/
-
-    ; Setting HL -----------------------------------------------------------------------------------
+    ; Setting HL
 
     ; Get screen position
     ld a, [$FF43]
@@ -519,34 +369,12 @@ getNextColumnLeft:
     ld l, a
 .c:
 
-    /*; Everything past here involves adding the Y source amount:
-
-    ; Get screen position --YYYYYYYYYYYYYYY--
-    ld a, [$FF42]
-    ; Divide by 8
-    sra a
-    sra a
-    sra a
-    ; Clear bad sign bits
-    and a, %00011111
-
-    ; Set BC to the screen offset: floor ( Screen position / 8 )
-    ld b, 0
-    ld c, a
-
-    ; Multiply by 32
-    call BCTimes32
-
-    ; Add BC to HL
-    add hl, bc*/
-
     ; Draw the entire column
     jp drawColumn
 
-; -------------------------------------------------------------------------------
 ; Draw a column at HL
-; -------------------------------------------------------------------------------
 drawColumn:
+    ; TODO: Add a proper loop so that this takes up less space in ROM
     call setTileForColumn
     call setTileForColumn
     call setTileForColumn
@@ -582,9 +410,7 @@ drawColumn:
     ; Ret to code
     ret
 
-; -------------------------------------------------------------------------------
 ; One tile and goto next
-; ------------------------------------------------------------------------------
 setTileForColumn:    
     ; Wait for HBlank, otherwise screen dies in a fire (glitchiness)
 .waitVRAM
@@ -596,7 +422,7 @@ setTileForColumn:
     ld a, [de]
     ld [hl], a
 
-    ; Add the map width to DE -----------------------------------------------
+    ; Add the map width to DE
 
     ; Load HL into BC for now.
     ld b, h
@@ -618,7 +444,7 @@ setTileForColumn:
     ld h, b
     ld l, c
     
-    ; Add the 32 to HL -----------------------------------------------
+    ; Add the 32 to HL 
 
     ; Add 32 to hl
     ld a, $20
@@ -631,13 +457,11 @@ setTileForColumn:
     ; Return to code
     ret
 
-; -------------------------------------------------------------------------------------------------------------------
-; Functions definitions - LCD Functions -----------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
+; -------------------------------------
+; Functions definitions - LCD Functions 
+; -------------------------------------
 
-; -------------------------------------------------------------------------------
 ; Turn off the LCD 
-; -------------------------------------------------------------------------------
 disableLCD:
 
 ; Make sure to wait for VBlank before we turn off the screen to avoid destroying it
@@ -652,27 +476,21 @@ disableLCD:
     ; Return to code
     ret
 
-; -------------------------------------------------------------------------------
 ; Turn on the LCD
-; -------------------------------------------------------------------------------
 enableLCD:
     ld a, LCDCF_BGON | LCDCF_BG8000 | LCDCF_ON
     ldh [rLCDC], a
     ; Return to code
     ret
     
-; -------------------------------------------------------------------------------
 ; Set color palette - Sets the palette of the screen to %11100100
-; -------------------------------------------------------------------------------
 loadPalette:
     ld a, %11100100
     ld [rBGP], a
     ; Return to code
     ret 
      
-; -------------------------------------------------------------------------------
 ; Copy grassy tiles into registers to be loaded
-; -------------------------------------------------------------------------------
 copyGrassyTiles:
     ld de, GrassyTiles
     ld hl, $8000
@@ -680,10 +498,8 @@ copyGrassyTiles:
     ; Push copied tileset to VRAM
     jp pLoadTiles
 
-; -------------------------------------------------------------------------------
 ; Loads the copied graphics into VRAM - Loads the tileset into the VRAM at $8000
 ; NEVER CALL THIS FUNCTION
-; -------------------------------------------------------------------------------   
 pLoadTiles:
 .copyTilesLoop:
     ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
@@ -698,9 +514,7 @@ pLoadTiles:
     ; Return to code
     ret
 
-; -------------------------------------------------------------------------------
 ; Copy HillSide tile map into registers to be loaded
-; -------------------------------------------------------------------------------
 copyHillSideMap:
     ld de, HillSideTilemap
     ld hl, $9800
@@ -708,9 +522,7 @@ copyHillSideMap:
     ; Push copied tilemap to VRAM
     jp pLoadMap
 
-; -------------------------------------------------------------------------------
 ; Copy HillMiddle tile map into registers to be loaded
-; -------------------------------------------------------------------------------
 copyHillMiddleMap:
     ld de, HillMiddleTilemap
     ld hl, $9800
@@ -718,10 +530,8 @@ copyHillMiddleMap:
     ; Push copied tilemap to VRAM
     jp pLoadMap
 
-; -------------------------------------------------------------------------------
 ; Loads the copied tilemap into VRAM - Loads the map into the VRAM at $9800
 ; NEVER CALL THIS FUNCTION
-; -------------------------------------------------------------------------------
 pLoadMap:
 .copyTileMapLoop:
     ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
@@ -736,9 +546,7 @@ pLoadMap:
     ; Return to code
     ret 
 
-; -------------------------------------------------------------------------------
 ; Copy HillsMapTilemap into registers to be loaded
-; -------------------------------------------------------------------------------
 copyNewHillExtMap:
     ld de, HillsMapTilemap
     ld hl, $9800
@@ -754,10 +562,8 @@ copyNewHillExtMap:
     ; Push copied tilemap to VRAM
     jp pLoadExtendedMap
 
-; -------------------------------------------------------------------------------
 ; Loads the copied ext tilemap into VRAM - Loads the map into the VRAM at $9800
 ; NEVER CALL THIS FUNCTION
-; -------------------------------------------------------------------------------
 pLoadExtendedMap:
     
     ; Set drawOffset
@@ -767,7 +573,7 @@ pLoadExtendedMap:
 ; Draw the screen
 .screenLoop:
 
-    ; Set universalCounter -----------------------------------------
+    ; Set universalCounter
     ld a, $20
     ld [universalCounter], a
 
@@ -789,9 +595,9 @@ pLoadExtendedMap:
         ; Loop?
         jp nz, .rowLoop
 
-    ; Add mapX minus $20 to DE -----------------------------------------
+    ; Add mapX minus $20 to DE
 
-    ; One row down: -----------------------------------------
+    ; One row down: 
     ld a, [drawOffset]
     inc a
     ld [drawOffset],a
@@ -841,13 +647,11 @@ pLoadExtendedMap:
     ; Return to code
     ret
 
-; -------------------------------------------------------------------------------------------------------------------
-; Function definitions - Joypad Functions ---------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
+; ---------------------------------------
+; Function definitions - Joypad Functions
+; ---------------------------------------
 
-; -------------------------------------------------------------------------------
 ; Update Joypad Pressed Buttons 
-; -------------------------------------------------------------------------------
 updateJoypadState:
 
     ; Get joypad register
@@ -908,13 +712,11 @@ updateJoypadState:
     
     ret
 
-; -------------------------------------------------------------------------------------------------------------------
-; Function definitions - Math Functions -----------------------------------------------------------------------------
-; -------------------------------------------------------------------------------------------------------------------
+; -------------------------------------
+; Function definitions - Math Functions
+; -------------------------------------
 
-; -------------------------------------------------------------------------------
 ; Multiplay BC times 32
-; -------------------------------------------------------------------------------
 BCTimes32:
 
     ; BC * 2 - 1
@@ -965,9 +767,7 @@ BCTimes32:
     ; Return to code
     ret
     
-; -------------------------------------------------------------------------------
 ; Multiplay HL times 32
-; -------------------------------------------------------------------------------
 HLTimes32:
 
     ; BC * 2 - 1
