@@ -8,7 +8,6 @@
 INCLUDE "hardware.inc"
 
 ; Resources
-include "GrassyTiles.inc"
 include "HillMiddle.inc"
 include "HillSide.inc"
 include "HillsMap.inc"
@@ -818,3 +817,11 @@ HLTimes32:
     ;sla b
     ; Return to code
     ret
+
+SECTION "Graphics", ROM0
+
+; Start of tile array.
+GrassyTiles:
+    INCBIN "GrassyTiles.2bpp"
+    .end:
+
