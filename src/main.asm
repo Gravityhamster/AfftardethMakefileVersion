@@ -21,7 +21,7 @@ SECTION "Header", ROM0[$100]
 
     jp main
     ; Write zeros until at address 150
-    ds $150 - @
+    ds $150 - @, 0
 
 ; START
 SECTION "Game code", ROM0[$150]
