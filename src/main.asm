@@ -882,18 +882,18 @@ initOAM:
     ret
 
 ; Allocate space for the oam copy routine and also place the routine into HRAM
-  oamCopyRoutine:
-  LOAD "hram", HRAM
-  hOAMCopyRoutine:
+oamCopyRoutine:
+LOAD "hram", HRAM
+hOAMCopyRoutine:
     ld   a, HIGH(wOAMBuffer)
     ldh  [rDMA], a
     ld   a, $28
-  .wait:
+.wait:
     dec  a
     jr   nz, .wait
     ret
-  .end:
-  ENDL
+.end:
+ENDL
 
 ; Graphics section
 SECTION "Graphics", ROM0
