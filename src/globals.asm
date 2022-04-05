@@ -5,9 +5,9 @@ SECTION "Globals", WRAM0
 ; ----------------
 
 ; OAM Memory is for 40 sprites with 4 bytes per sprite
-wOAMBuffer:
+wOAMBuffer::
     ds 40 * 4
-  .end:
+  .end::
 
 ; ---------------
 ; Timer variables

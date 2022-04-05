@@ -27,9 +27,9 @@ SECTION "Game code", ROM0[$150]
 vblankHandler:
     ; VBlank interrupt. We only call the OAM DMA routine here.
     ; We need to be careful to preserve the registers that we use, see interrupt example.
-    ;push af
-    ;call hOAMCopyRoutine
-    ;pop  af
+    push af
+    call hOAMCopyRoutine
+    pop  af
     reti
 
 ; ---------------------------------------
@@ -47,6 +47,9 @@ main:
     ; Turn off the LCD
     call disableLCD
 
+    ; Initialize the OAM shadow buffer
+    call initOAM
+
     ; Load the tileset into the registers and move to VRAM
     call copyGrassyTiles
 
@@ -61,6 +64,16 @@ main:
 
     ; Turn on the LCD
     call enableLCD
+
+    ; Configure sprites in the OAM memory with different positions and palettes.
+    ld   a, 20  ; y position
+    ld   [wOAMBuffer + 0], a
+    ld   a, 20  ; x position
+    ld   [wOAMBuffer + 1], a
+    ld   a, 0   ; tile number
+    ld   [wOAMBuffer + 2], a
+    ld   a, 0   ; sprite attributes
+    ld   [wOAMBuffer + 3], a
 
     ; Enable the VBlank interrupt
     ld   a, IEF_VBLANK
@@ -490,7 +503,7 @@ disableLCD:
 
 ; Turn on the LCD
 enableLCD:
-    ld a, LCDCF_BGON | LCDCF_BG8800 | LCDCF_ON
+    ld a, LCDCF_BGON | LCDCF_BG8800 | LCDCF_ON | LCDCF_OBJON
     ldh [rLCDC], a
     ; Return to code
     ret
@@ -499,6 +512,8 @@ enableLCD:
 loadPalette:
     ld a, %11100100
     ld [rBGP], a
+    ld a, %11100100
+    ld [rOBP0], a
     ; Return to code
     ret 
      
@@ -838,6 +853,49 @@ HLTimes32:
     ; Return to code
     ret
 
+; --------------------------------------------
+; Function definitions - Sprite initialization
+; --------------------------------------------
+
+; Initialize the OAM tile buffer
+initOAM:
+    ; Initialize the OAM shadow buffer, and setup the OAM copy routine in HRAM.
+    ld   hl, wOAMBuffer
+    ld   c, wOAMBuffer.end - wOAMBuffer
+    xor  a
+  .clearOAMLoop:
+    ld   [hl+], a
+    dec  c
+    jr   nz, .clearOAMLoop
+  
+    ld   hl, hOAMCopyRoutine
+    ld   de, oamCopyRoutine
+    ld   c, hOAMCopyRoutine.end - hOAMCopyRoutine
+  .copyOAMRoutineLoop:
+    ld   a, [de]
+    inc  de
+    ld   [hl+], a
+    dec  c
+    jr   nz, .copyOAMRoutineLoop
+    ; We directly copy to clear the initial OAM memory, which else contains garbage.
+    call hOAMCopyRoutine
+    ret
+
+; Allocate space for the oam copy routine and also place the routine into HRAM
+  oamCopyRoutine:
+  LOAD "hram", HRAM
+  hOAMCopyRoutine:
+    ld   a, HIGH(wOAMBuffer)
+    ldh  [rDMA], a
+    ld   a, $28
+  .wait:
+    dec  a
+    jr   nz, .wait
+    ret
+  .end:
+  ENDL
+
+; Graphics section
 SECTION "Graphics", ROM0
 
 ; Grassy tile data
