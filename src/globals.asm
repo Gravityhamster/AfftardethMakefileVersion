@@ -16,6 +16,10 @@ timer::
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; 8-bit X position
+wSimplePosition::
+    ds 1
+
 ; 2-byte
 memX::
     ds 2

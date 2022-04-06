@@ -7,6 +7,10 @@
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
 
+; Handle interrupts
+SECTION "vblankInterrupt", ROM0[$040]
+    jp vblankHandler
+
 ; SETUP - Allocates for GB logo (?)
 SECTION "Header", ROM0[$100]
 
@@ -17,7 +21,12 @@ SECTION "Header", ROM0[$100]
 ; START
 SECTION "Game code", ROM0[$150]
 
-def ScrX = 0
+; ----------------
+; VBlank Interrupt
+; ----------------
+vblankHandler:
+
+    reti
 
 ; ---------------------------------------
 ; Main - This is where the program starts
@@ -37,11 +46,42 @@ main:
     ; Load the tileset into the registers and move to VRAM
     call copyGrassyTiles
 
+    ; Load the sprite tileset into the registers and move to VRAM
+    call copySpriteTiles
+
     ; Load the tilemap into the registers and move to VRAM
     call copyNewHillExtMap
 
     ; Load the palette
     call loadPalette
+  
+    ; Initilize Sprite Object Library.
+    call InitSprObjLib
+    
+    ; Reset hardware OAM
+    xor a, a
+    ld b, 160
+    ld hl, _OAMRAM
+  .resetOAM:
+    ld [hli], a
+    dec b
+    jr nz, .resetOAM
+    
+    ; Reset Positions
+    ld c, 4
+    ld hl, wSimplePosition
+    xor a, a
+  : ld [hli], a
+    dec c
+    jr nz, :-
+    
+    ; Enable VBlank interrupt
+    ld a, IEF_VBLANK
+    ldh [rIE], a
+    
+    ; Clear pending interrupts
+    xor a, a
+    ldh [rIF], a
 
     ; Turn on the LCD
     call enableLCD
@@ -469,7 +509,7 @@ disableLCD:
 
 ; Turn on the LCD
 enableLCD:
-    ld a, LCDCF_BGON | LCDCF_BG8000 | LCDCF_ON
+    ld a, LCDCF_BGON | LCDCF_BG8800 | LCDCF_ON | LCDCF_OBJON
     ldh [rLCDC], a
     ; Return to code
     ret
@@ -478,14 +518,24 @@ enableLCD:
 loadPalette:
     ld a, %11100100
     ld [rBGP], a
+    ld a, %11100100
+    ld [rOBP0], a
     ; Return to code
     ret 
      
 ; Copy grassy tiles into registers to be loaded
 copyGrassyTiles:
     ld de, GrassyTiles
-    ld hl, $8000
+    ld hl, $9000
     ld bc, GrassyTiles.end - GrassyTiles ; We set bc to the amount of bytes to copy
+    ; Push copied tileset to VRAM
+    jp pLoadTiles
+     
+; Copy sprite tiles into registers to be loaded
+copySpriteTiles:
+    ld de, SpriteTiles
+    ld hl, $8000
+    ld bc, SpriteTiles.end - SpriteTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
     jp pLoadTiles
 
