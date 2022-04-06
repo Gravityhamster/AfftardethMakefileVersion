@@ -816,3 +816,7 @@ GrassyTiles::
     INCBIN "res/GrassyTiles.2bpp"
     .end:
 
+; Sprite tile data
+SpriteTiles::
+    INCBIN "res/SpriteTiles.2bpp"
+    .end:
