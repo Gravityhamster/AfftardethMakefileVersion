@@ -32,10 +32,6 @@ maxX::
 pixX::
     ds 4
 
-; 2-byte
-tempVar::
-    ds 2
-
 ; 1-byte offset
 drawOffset::
     ds 1

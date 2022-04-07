@@ -30,10 +30,22 @@ main:
     ld [memX+1], a
     ld [pixX], a
     ld [pixX+1], a
+    ld [pixX+2], a
+    ld [pixX+3], a
     ld [maxX], a
     ld [maxX+1], a
+    ld [maxX+2], a
+    ld [maxX+3], a
     ld [mapX], a
     ld [mapX+1], a
+    ld [drawOffset], a
+    ld [drawOffset+1], a
+    ld [universalCounter], a
+    ld [universalCounter+1], a
+    ld [joypadState], a
+    ld [joypadState+1], a
+    ld [joypadPressed], a
+    ld [joypadPressed+1], a
 
     ; Turn off the LCD
     call disableLCD
