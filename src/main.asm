@@ -10,6 +10,10 @@ INCLUDE "structs.inc"
 
 ; Handle interrupts
 SECTION "vblankInterrupt", ROM0[$040]
+    push af
+    push bc
+    push de
+    push hl
     jp vblankHandler
 
 ; SETUP - Allocates for GB logo (?)
@@ -26,14 +30,20 @@ SECTION "Game code", ROM0[$150]
 ; VBlank Interrupt
 ; ----------------
 vblankHandler:
-
+    ; Push sprites to OAM
+    ld a, HIGH(wShadowOAM)
+    call hOAMDMA
+    
+    pop hl
+    pop de
+    pop bc
+    pop af
     reti
 
 ; ---------------------------------------
 ; Main - This is where the program starts
 ; ---------------------------------------
 main:
-
     ; Set map x
     ld a, $00
     ld [memX], a
@@ -64,7 +74,7 @@ main:
 
     ; Reset sprite positions
     call ResetPositions
-    
+
     ; Enable VBlank interrupt
     ld a, IEF_VBLANK
     ldh [rIE], a
@@ -76,13 +86,24 @@ main:
     ; Turn on the LCD
     call enableLCD
 
+    ; Enable interrupts
+    ei
+
     ; Loop the game
     jp gameLoop
 
 ; ---------------------------------------------
 ; gameLoop - This is where the gameLoop happens
 ; ---------------------------------------------
-gameLoop:
+gameLoop:    
+    ; Reset shadow OAM
+    call ResetShadowOAM
+    ; Setup a single sprite
+    ld b, 10
+    ld c, 10
+    ld d, 0
+    ld e, 0
+    call RenderSimpleSprite
     ; Update the joypad
     call updateJoypadState
     ; Move the screen
