@@ -110,13 +110,13 @@ main:
 ; ---------------------------------------------
 gameLoop:    
     ; Reset shadow OAM
-    call ResetShadowOAM
+    ;call ResetShadowOAM
     ; Setup a single sprite
-    ld b, 10
-    ld c, 10
-    ld d, 0
-    ld e, 0
-    call RenderSimpleSprite
+    ;ld b, 10
+    ;ld c, 10
+    ;ld d, 0
+    ;ld e, 0
+    ;call RenderSimpleSprite
     ; Update the joypad
     call updateJoypadState
     ; Move the screen
