@@ -30,6 +30,10 @@ main:
     ld [memX+1], a
     ld [pixX], a
     ld [pixX+1], a
+    ld [maxX], a
+    ld [maxX+1], a
+    ld [mapX], a
+    ld [mapX+1], a
 
     ; Turn off the LCD
     call disableLCD

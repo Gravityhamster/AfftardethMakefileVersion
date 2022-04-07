@@ -55,35 +55,3 @@ joypadState::
 ; 1-byte - Buttons pressed this clock
 joypadPressed::
     ds 1
-
-; 1-bit - A
-joypadA::
-    ds %1
-    
-; 1-bit - B
-joypadB::
-    ds %1
-    
-; 1-bit - Strt
-joypadStrt::
-    ds %1
-    
-; 1-bit - Slct
-joypadSlct::
-    ds %1
-    
-; 1-bit - U
-joypadU::
-    ds %1
-    
-; 1-bit - D
-joypadD::
-    ds %1
-    
-; 1-bit - L
-joypadL::
-    ds %1
-    
-; 1-bit - R
-joypadR::
-    ds %1
