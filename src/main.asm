@@ -6,7 +6,7 @@
 
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
-INCLUDE "structs.asm"
+INCLUDE "structs.inc"
 
 ; Handle interrupts
 SECTION "vblankInterrupt", ROM0[$040]
