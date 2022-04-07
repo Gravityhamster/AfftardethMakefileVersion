@@ -66,9 +66,13 @@ main:
   
     ; Initilize Sprite Object Library.
     call InitSprObjLib
+
+    ; Reset shadow OAM
+    call ResetShadowOAM
     
-    ; Reset OAM
-    call ResetOAM
+    ; Move OAM to DMA
+    ld a, HIGH(wShadowOAM)
+    call hOAMDMA
 
     ; Reset sprite positions
     call ResetPositions
