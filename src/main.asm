@@ -76,7 +76,10 @@ main:
     call InitSprObjLib
 
     ; Reset shadow OAM
-    call ResetShadowOAM
+    ld d, 0
+    ld hl, wShadowOAM
+    ld bc, wShadowOAM.end - wShadowOAM
+    call memset
     
     ; Move OAM to DMA
     ld a, HIGH(wShadowOAM)
@@ -109,11 +112,11 @@ gameLoop:
     ; Reset shadow OAM
     call ResetShadowOAM
     ; Setup a single sprite
-    ;ld b, 10
-    ;ld c, 10
-    ;ld d, 0
-    ;ld e, 0
-    ;call RenderSimpleSprite
+    ld b, 10
+    ld c, 10
+    ld d, 0
+    ld e, 0
+    call RenderSimpleSprite
     ; Update the joypad
     call updateJoypadState
     ; Move the screen
@@ -906,6 +909,25 @@ ResetPositions:
     dec c
     jr nz, :-
     ret
+
+; Set memory to value
+; @param d - source
+; @param hl - destination
+; @param bc - counter
+; @clobbers a
+memset:
+.loop:
+    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
+    ld a, d
+    ld [hli], a
+
+    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
+    dec bc
+    ld a, b
+    or a, c
+    jp nz, .loop
+    ; Return to code
+    ret 
 
 SECTION "Graphics", ROM0
 

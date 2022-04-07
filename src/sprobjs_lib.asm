@@ -195,6 +195,7 @@ RenderMetasprite::
 SECTION "Shadow OAM", WRAM0, ALIGN[8]
 wShadowOAM::
   ds 160
+.end::
 
 SECTION "Shadow OAM Index", HRAM
 ; The current low byte of shadow OAM.
