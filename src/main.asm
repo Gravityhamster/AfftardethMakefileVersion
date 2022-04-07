@@ -44,10 +44,16 @@ vblankHandler:
 main:
     ; Set map x
     ld a, $00
+    ld [mapX], a
+    ld [mapX+1], a
+    ld [maxX], a
+    ld [maxX+1], a
     ld [memX], a
     ld [memX+1], a
     ld [pixX], a
     ld [pixX+1], a
+    ld [drawOffset], a
+    ld [universalCounter], a
 
     ; Turn off the LCD
     call disableLCD
