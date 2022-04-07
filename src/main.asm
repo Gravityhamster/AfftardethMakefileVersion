@@ -480,8 +480,9 @@ setTileForColumn:
     ; Add the map width to DE
 
     ; Load HL into BC for now.
-    ld b, h
-    ld c, l
+    ;ld b, h
+    ;ld c, l
+    push hl
 
     ; Load the map width into HL
     ld a, [mapX]
@@ -496,9 +497,10 @@ setTileForColumn:
     ld e, l
 
     ; Load BC back to HL
-    ld h, b
-    ld l, c
-    
+    ;ld h, b
+    ;ld l, c
+    pop hl
+
     ; Add the 32 to HL 
 
     ; Add 32 to hl
@@ -642,8 +644,9 @@ pLoadExtendedMap:
     jp z, .end
 
     ; Save HL
-    ld b, h
-    ld c, l
+    ;ld b, h
+    ;ld c, l
+    push hl
 
     ; Get mapX
     ld a, [mapX]
@@ -668,8 +671,9 @@ pLoadExtendedMap:
     ld e, l
 
     ; Restore HL
-    ld h, b
-    ld l, c
+    ;ld h, b
+    ;ld l, c
+    pop hl
 
     ; Loop?
     jp .screenLoop
