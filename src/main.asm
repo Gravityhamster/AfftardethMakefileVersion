@@ -31,7 +31,15 @@ vblankHandler:
     ; Push sprites to OAM
     ld a, HIGH(wShadowOAM)
     call hOAMDMA
-    
+
+    ; Read SCX into $FF43
+    ld a, [SCX]
+    ld [$FF43], a
+
+    ; Read SCY into $FF43
+    ld a, [SCY]
+    ld [$FF42], a
+
     pop hl
     pop de
     pop bc
@@ -56,6 +64,8 @@ main:
     ld [universalCounter], a
     ld [joypadState], a
     ld [joypadPressed], a
+    ld [SCX], a
+    ld [SCY], a
 
     ; Turn off the LCD
     call disableLCD
@@ -131,13 +141,9 @@ gameLoop:
 ; Move the viewport
 moveViewPortx1y1:    
     ; Wait for VBlank, otherwise screen dies in a fire (glitchiness)
-.waitForVBlank:
-    ld a, [rLY]
-    cp 144
-    jr c, .waitForVBlank
 
-    ; $FF43 - Scroll X
-    ; $FF42 - Scroll Y
+    ; SCX - Scroll X
+    ; SCY - Scroll Y
     ; b = x
     ; c = y
     
@@ -169,8 +175,8 @@ moveViewPortx1y1:
 
     jp z, .SkipAllRight
 
-    ; Load $FF43 into a
-    ld a, [$FF43] ; [$FF43] is Viewport X
+    ; Load SCX into a
+    ld a, [SCX] ; [SCX] is Viewport X
     and a, %00000111
     ; Only load a column and increment memX if the viewport is divisible by 8
     jp nz, .skip1 ; Skip the column drawing code if not zero
@@ -186,9 +192,9 @@ moveViewPortx1y1:
     ld a, [joypadState]
     and a, %00010000
     jp z, .rOff
-    ld a, [$FF43]
+    ld a, [SCX]
     add a, 1
-    ld [$FF43], a
+    ld [SCX], a
 
     ; increment pixX
     ld a, [pixX]
@@ -210,7 +216,7 @@ moveViewPortx1y1:
     ld b, a
     ld a, [memX + 1]
     ld c, a
-    ld a, [$FF43]
+    ld a, [SCX]
     or a, b
     or a, c
     jp z, .SkipAllLeft
@@ -219,9 +225,9 @@ moveViewPortx1y1:
     ld a, [joypadState]
     and a, %00100000
     jp z, .lOff
-    ld a, [$FF43]
+    ld a, [SCX]
     sub a, 1
-    ld [$FF43], a
+    ld [SCX], a
 
     ; decrement pixX
     ld a, [pixX]
@@ -236,8 +242,8 @@ moveViewPortx1y1:
 
 .lOff
 
-    ; Load $FF43 into a
-    ld a, [$FF43] ; [$FF43] is Viewport X
+    ; Load SCX into a
+    ld a, [SCX] ; [SCX] is Viewport X
     and a, %00000111
     ; Only load a column and increment memX if the viewport is divisible by 8
     jp nz, .skip2 ; Skip the column drawing code if not zero
@@ -257,21 +263,21 @@ moveViewPortx1y1:
     ld a, [joypadState]
     and a, %10000000
     jp z, .dskip  ; Input
-    ld a, [$FF42]
+    ld a, [SCY]
     cp a, $70 ; clamp
     jp nc, .dskip  ; clamp
     add a, 1
-    ld [$FF42], a
+    ld [SCY], a
 .dskip:  ; clamp
 
     ld a, [joypadState]
     and a, %01000000
     jp z, .uskip  ; Input
-    ld a, [$FF42]
+    ld a, [SCY]
     cp a, $01 ; clamp
     jp c, .uskip ; clamp
     sub a, 1
-    ld [$FF42], a
+    ld [SCY], a
 .uskip: ; clamp
 
     ; Return to code
@@ -287,7 +293,7 @@ getNextColumnRight:
     ld c, a
 
     ; Check if the viewport is 0 
-    ld a, [$FF43]
+    ld a, [SCX]
     or b
     or c
     
@@ -321,7 +327,7 @@ getNextColumnRight:
     ; Setting HL
 
     ; Get screen position
-    ld a, [$FF43]
+    ld a, [SCX]
     ; Divide by 8
     sra a
     sra a
@@ -393,7 +399,7 @@ getNextColumnLeft:
     ; Setting HL
 
     ; Get screen position
-    ld a, [$FF43]
+    ld a, [SCX]
     ; Divide by 8
     sra a
     sra a
