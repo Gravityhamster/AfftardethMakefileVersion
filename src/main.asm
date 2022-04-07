@@ -6,6 +6,7 @@
 
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
+INCLUDE "structs.asm"
 
 ; Handle interrupts
 SECTION "vblankInterrupt", ROM0[$040]
@@ -58,22 +59,11 @@ main:
     ; Initilize Sprite Object Library.
     call InitSprObjLib
     
-    ; Reset hardware OAM
-    xor a, a
-    ld b, 160
-    ld hl, _OAMRAM
-  .resetOAM:
-    ld [hli], a
-    dec b
-    jr nz, .resetOAM
-    
-    ; Reset Positions
-    ld c, 4
-    ld hl, wSimplePosition
-    xor a, a
-  : ld [hli], a
-    dec c
-    jr nz, :-
+    ; Reset OAM
+    call ResetOAM
+
+    ; Reset sprite positions
+    call ResetPositions
     
     ; Enable VBlank interrupt
     ld a, IEF_VBLANK
@@ -857,6 +847,33 @@ HLTimes32:
 .c5
     ;sla b
     ; Return to code
+    ret
+
+; ----------------
+; Sprite functions
+; ----------------
+
+; Reset hardware OAM
+ResetOAM:
+    xor a, a
+    ld b, 160
+    ld hl, _OAMRAM
+.resetOAM:
+    ld [hli], a
+    dec b
+    jr nz, .resetOAM
+    ; Return to code
+    ret
+
+; Reset sprite positions
+ResetPositions:
+    ; Reset Positions
+    ld c, 4
+    ld hl, wSimplePosition
+    xor a, a
+  : ld [hli], a
+    dec c
+    jr nz, :-
     ret
 
 SECTION "Graphics", ROM0
