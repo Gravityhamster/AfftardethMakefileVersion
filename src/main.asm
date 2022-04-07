@@ -553,7 +553,7 @@ copyGrassyTiles:
     ld hl, $9000
     ld bc, GrassyTiles.end - GrassyTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
-    jp pLoadTiles
+    jp memcpy
      
 ; Copy sprite tiles into registers to be loaded
 copySpriteTiles:
@@ -561,23 +561,7 @@ copySpriteTiles:
     ld hl, $8000
     ld bc, SpriteTiles.end - SpriteTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
-    jp pLoadTiles
-
-; Loads the copied graphics into VRAM - Loads the tileset into the VRAM at $8000
-; NEVER CALL THIS FUNCTION
-pLoadTiles:
-.copyTilesLoop:
-    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
-    ld a, [de]
-    ld [hli], a
-    inc de
-    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, .copyTilesLoop
-    ; Return to code
-    ret
+    jp memcpy
 
 ; Copy HillSide tile map into registers to be loaded
 copyHillSideMap:
@@ -585,7 +569,7 @@ copyHillSideMap:
     ld hl, $9800
     ld bc, HillSideTilemap.end - HillSideTilemap ; We set bc to the amount of bytes to copy
     ; Push copied tilemap to VRAM
-    jp pLoadMap
+    jp memcpy
 
 ; Copy HillMiddle tile map into registers to be loaded
 copyHillMiddleMap:
@@ -593,23 +577,7 @@ copyHillMiddleMap:
     ld hl, $9800
     ld bc, HillMiddleTilemap.end - HillMiddleTilemap ; We set bc to the amount of bytes to copy
     ; Push copied tilemap to VRAM
-    jp pLoadMap
-
-; Loads the copied tilemap into VRAM - Loads the map into the VRAM at $9800
-; NEVER CALL THIS FUNCTION
-pLoadMap:
-.copyTileMapLoop:
-    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
-    ld a, [de]
-    ld [hli], a
-    inc de
-    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, .copyTileMapLoop
-    ; Return to code
-    ret 
+    jp memcpy 
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap:
@@ -887,18 +855,6 @@ HLTimes32:
 ; Sprite functions
 ; ----------------
 
-; Reset hardware OAM
-ResetOAM:
-    xor a, a
-    ld b, 160
-    ld hl, _OAMRAM
-.resetOAM:
-    ld [hli], a
-    dec b
-    jr nz, .resetOAM
-    ; Return to code
-    ret
-
 ; Reset sprite positions
 ResetPositions:
     ; Reset Positions
@@ -911,16 +867,35 @@ ResetPositions:
     ret
 
 ; Set memory to value
-; @param d - source
+; @param d - value
 ; @param hl - destination
 ; @param bc - counter
 ; @clobbers a
-memset:
+memset::
 .loop:
     ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
     ld a, d
     ld [hli], a
 
+    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
+    dec bc
+    ld a, b
+    or a, c
+    jp nz, .loop
+    ; Return to code
+    ret
+
+; Copy memory from address memory to value
+; @param de - source address
+; @param hl - destination
+; @param bc - counter
+; @clobbers a
+memcpy::
+.loop:
+    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
+    ld a, [de]
+    ld [hli], a
+    inc de
     ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
     dec bc
     ld a, b
