@@ -54,6 +54,8 @@ main:
     ld [pixX+1], a
     ld [drawOffset], a
     ld [universalCounter], a
+    ld [joypadState], a
+    ld [joypadPressed], a
 
     ; Turn off the LCD
     call disableLCD

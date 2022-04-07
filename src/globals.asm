@@ -44,7 +44,7 @@ joypadState::
 joypadPressed::
     ds 1
 
-; 1-bit - A
+/*; 1-bit - A
 joypadA::
     ds %1
     
@@ -75,3 +75,4 @@ joypadL::
 ; 1-bit - R
 joypadR::
     ds %1
+*/
