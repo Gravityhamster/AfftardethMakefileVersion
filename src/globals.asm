@@ -4,6 +4,13 @@ SECTION "Globals", WRAM0
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; 1-byte
+SCX::
+    ds 1
+
+SCY::
+    ds 1
+
 ; 8-bit X position
 wSimplePosition::
     ds 1
@@ -30,13 +37,6 @@ drawOffset::
 
 ; 1-byte offset
 universalCounter::
-    ds 1
-
-; 1-byte
-SCX::
-    ds 1
-
-SCY::
     ds 1
 
 ; -------------------------------------------------------------------------------

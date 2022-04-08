@@ -28,17 +28,18 @@ SECTION "Game code", ROM0[$150]
 
 ; VBlank Interrupt
 vblankHandler:
+    
     ; Push sprites to OAM
     ld a, HIGH(wShadowOAM)
     call hOAMDMA
 
     ; Read SCX into $FF43
     ld a, [SCX]
-    ld [$FF43], a
+    ld [rSCX], a
 
     ; Read SCY into $FF43
     ld a, [SCY]
-    ld [$FF42], a
+    ld [rSCY], a
 
     pop hl
     pop de
@@ -81,7 +82,7 @@ main:
 
     ; Load the palette
     call loadPalette
-  
+    
     ; Initilize Sprite Object Library.
     call InitSprObjLib
 
@@ -119,19 +120,40 @@ main:
 ; gameLoop - This is where the gameLoop happens
 ; ---------------------------------------------
 gameLoop:    
-    ; Reset shadow OAM
-    ;call ResetShadowOAM
+    ; Reset shadow oam
+    call ResetShadowOAM
     ; Setup a single sprite
-    ;ld b, 10
-    ;ld c, 10
-    ;ld d, 0
-    ;ld e, 0
-    ;call RenderSimpleSprite
+    ld b, 10
+    ld c, 10
+    ld d, 0
+    ld e, 0
+    call RenderSimpleSprite
+    ; Setup a single sprite
+    ld b, 10
+    ld c, 18
+    ld d, 1
+    ld e, 0
+    call RenderSimpleSprite
+    ; Setup a single sprite
+    ld b, 18
+    ld c, 10
+    ld d, 2
+    ld e, 0
+    call RenderSimpleSprite
+    ; Setup a single sprite
+    ld b, 18
+    ld c, 18
+    ld d, 3
+    ld e, 0
+    call RenderSimpleSprite
     ; Update the joypad
     call updateJoypadState
     ; Move the screen
+    REPT 4
     call moveViewPortx1y1
+    ENDR
     ; Loop
+    halt
     jp gameLoop
     
 ; -----------------------------------------
@@ -154,7 +176,7 @@ moveViewPortx1y1:
     ld a, [maxX + 1]
     ld c, a
 
-    ; loap memx
+    ; load memx
     ld a, [pixX]
     ld d, a
     ld a, [pixX + 1]
