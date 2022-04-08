@@ -1,8 +1,28 @@
+SECTION "Hard Globals", ROM0
+
+/*; Meta sprite 8x8:
+PlayerMetasprite::
+    db 16, 8, 0, 0
+    db 16, 16, 1, 0
+    db 24, 8, 2, 0
+    db 24, 16, 3, 0
+    db 128*/
+
+; Meta sprite 8x16:
+PlayerMetasprite::
+    db 16, 8, 0, 0
+    db 16, 16, 2, 0
+    db 128
+
 SECTION "Globals", WRAM0
 
 ; -------------------------------------------------------------------------------
 ; Work variables
 ; -------------------------------------------------------------------------------
+
+; Q12.4 fixed-point X posiition
+MetaspritePosition::
+    dw
 
 ; 1-byte
 SCX::
@@ -50,36 +70,3 @@ joypadState::
 ; 1-byte - Buttons pressed this clock
 joypadPressed::
     ds 1
-
-/*; 1-bit - A
-joypadA::
-    ds %1
-    
-; 1-bit - B
-joypadB::
-    ds %1
-    
-; 1-bit - Strt
-joypadStrt::
-    ds %1
-    
-; 1-bit - Slct
-joypadSlct::
-    ds %1
-    
-; 1-bit - U
-joypadU::
-    ds %1
-    
-; 1-bit - D
-joypadD::
-    ds %1
-    
-; 1-bit - L
-joypadL::
-    ds %1
-    
-; 1-bit - R
-joypadR::
-    ds %1
-*/

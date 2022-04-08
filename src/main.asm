@@ -122,7 +122,8 @@ main:
 gameLoop:    
     ; Reset shadow oam
     call ResetShadowOAM
-    ; Setup a single sprite
+
+    /*; Setup a single sprite
     ld b, 10
     ld c, 10
     ld d, 0
@@ -145,7 +146,25 @@ gameLoop:
     ld c, 18
     ld d, 3
     ld e, 0
-    call RenderSimpleSprite
+    call RenderSimpleSprite*/
+
+    ; Set the Metasprite position to 0
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, c
+    ld [MetaspritePosition], a
+    ld a, b
+    ld [MetaspritePosition + 1], a
+
+    ; Rend Metasprite
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, [MetaspritePosition]
+    ld e, a
+    ld a, [MetaspritePosition + 1]
+    ld d, a
+    ld hl, PlayerMetasprite
+    call RenderMetasprite
+
+
     ; Update the joypad
     call updateJoypadState
     ; Move the screen
@@ -563,7 +582,7 @@ disableLCD:
 
 ; Turn on the LCD
 enableLCD:
-    ld a, LCDCF_BGON | LCDCF_BG8800 | LCDCF_ON | LCDCF_OBJON
+    ld a, LCDCF_BGON | LCDCF_BG8800 | LCDCF_ON | LCDCF_OBJON | LCDCF_OBJ16
     ldh [rLCDC], a
     ; Return to code
     ret
