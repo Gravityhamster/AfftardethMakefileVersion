@@ -1,20 +1,59 @@
+; Include the struct lib
+INCLUDE "structs.inc"
+
+; Define structs
+    struct metaSpriteTemplate
+        bytes 2, YPos
+        bytes 2, XPos
+        bytes 2, MetaSprite
+    end_struct
+
+
+SECTION "Hard Globals", ROM0
+
+/*; Meta sprite 8x8:
+PlayerMetasprite::
+    db 16, 8, 0, 0
+    db 16, 16, 1, 0
+    db 24, 8, 2, 0
+    db 24, 16, 3, 0
+    db 128*/
+
+; Meta sprite 8x16:
+PlayerMetasprite::
+    db 16, 8, 0, 0
+    db 16, 16, 2, 0
+    db 128
+
 SECTION "Globals", WRAM0
-
-; -------------------------------------------------------------------------------
-; Timer variables
-; -------------------------------------------------------------------------------
-
-; 8-bytes
-timeSet::
-    ds 8
-
-; 8-bytes
-timer::
-    ds 8
 
 ; -------------------------------------------------------------------------------
 ; Work variables
 ; -------------------------------------------------------------------------------
+
+; Struct references
+    dstruct metaSpriteTemplate, PlayerSprite
+
+; Sprite global offset
+YOffset::
+    ds 2
+XOffset::
+    ds 2
+
+; Q12.4 fixed-point X posiition
+MetaspritePosition::
+    dw
+
+; 1-byte
+SCX::
+    ds 1
+
+SCY::
+    ds 1
+
+; 8-bit X position
+wSimplePosition::
+    ds 1
 
 ; 2-byte
 memX::

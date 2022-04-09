@@ -7,6 +7,14 @@
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
 
+; Handle interrupts
+SECTION "vblankInterrupt", ROM0[$040]
+    push af
+    push bc
+    push de
+    push hl
+    jp vblankHandler
+
 ; SETUP - Allocates for GB logo (?)
 SECTION "Header", ROM0[$100]
 
@@ -17,35 +25,54 @@ SECTION "Header", ROM0[$100]
 ; START
 SECTION "Game code", ROM0[$150]
 
-def ScrX = 0
+; VBlank Interrupt
+vblankHandler:
+    
+    ; Push sprites to OAM
+    ld a, HIGH(wShadowOAM)
+    call hOAMDMA
+
+    ; Read SCX into $FF43
+    ld a, [SCX]
+    ld [rSCX], a
+
+    ; Read SCY into $FF43
+    ld a, [SCY]
+    ld [rSCY], a
+
+    pop hl
+    pop de
+    pop bc
+    pop af
+    reti
 
 ; ---------------------------------------
 ; Main - This is where the program starts
 ; ---------------------------------------
 main:
-
-    ; Set map x
+    ; Set WRAM
     ld a, $00
+    ld [YOffset], a
+    ld [YOffset+1], a
+    ld [XOffset], a
+    ld [XOffset+1], a
+    ld [mapX], a
+    ld [mapX+1], a
+    ld [maxX], a
+    ld [maxX+1], a
     ld [memX], a
     ld [memX+1], a
     ld [pixX], a
     ld [pixX+1], a
-    ld [pixX+2], a
-    ld [pixX+3], a
-    ld [maxX], a
-    ld [maxX+1], a
-    ld [maxX+2], a
-    ld [maxX+3], a
-    ld [mapX], a
-    ld [mapX+1], a
     ld [drawOffset], a
-    ld [drawOffset+1], a
     ld [universalCounter], a
-    ld [universalCounter+1], a
     ld [joypadState], a
-    ld [joypadState+1], a
     ld [joypadPressed], a
-    ld [joypadPressed+1], a
+    ld [SCX], a
+    ld [SCY], a
+
+    ; Initialize all sprite structs
+    call InitStructs
 
     ; Turn off the LCD
     call disableLCD
@@ -53,14 +80,44 @@ main:
     ; Load the tileset into the registers and move to VRAM
     call copyGrassyTiles
 
+    ; Load the sprite tileset into the registers and move to VRAM
+    call copySpriteTiles
+
     ; Load the tilemap into the registers and move to VRAM
     call copyNewHillExtMap
 
     ; Load the palette
     call loadPalette
+    
+    ; Initilize Sprite Object Library.
+    call InitSprObjLib
+
+    ; Reset shadow OAM
+    ld d, 0
+    ld hl, wShadowOAM
+    ld bc, wShadowOAM.end - wShadowOAM
+    call memset
+    
+    ; Move OAM to DMA
+    ld a, HIGH(wShadowOAM)
+    call hOAMDMA
+
+    ; Reset sprite positions
+    call ResetPositions
+
+    ; Enable VBlank interrupt
+    ld a, IEF_VBLANK
+    ldh [rIE], a
+    
+    ; Clear pending interrupts
+    xor a, a
+    ldh [rIF], a
 
     ; Turn on the LCD
     call enableLCD
+
+    ; Enable interrupts
+    ei
 
     ; Loop the game
     jp gameLoop
@@ -68,12 +125,35 @@ main:
 ; ---------------------------------------------
 ; gameLoop - This is where the gameLoop happens
 ; ---------------------------------------------
-gameLoop:
+gameLoop:    
+    ; Reset shadow oam
+    call ResetShadowOAM
+
+    ; Draw all structs
+    call RenderStructs
+
+    ; Move the sprite
+    /*ld a, [PlayerSprite_YPos]
+    ld h, a 
+    ld a, [PlayerSprite_YPos + 1]
+    ld l, a 
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [PlayerSprite_YPos], a
+    ld a, l
+    ld [PlayerSprite_YPos+1], a*/
+
     ; Update the joypad
     call updateJoypadState
+
     ; Move the screen
+    REPT 4
     call moveViewPortx1y1
+    ENDR
+    
     ; Loop
+    halt
     jp gameLoop
     
 ; -----------------------------------------
@@ -82,31 +162,30 @@ gameLoop:
 
 ; Move the viewport
 moveViewPortx1y1:    
-    ; Wait for VBlank, otherwise screen dies in a fire (glitchiness)
-.waitForVBlank:
-    ld a, [rLY]
-    cp 144
-    jr c, .waitForVBlank
-
-    ; $FF43 - Scroll X
-    ; $FF42 - Scroll Y
-    ; b = x
-    ; c = y
     
-    ; Check if mapx
-    ; Load mapx
+    call MoveViewRight
+    call MoveViewLeft
+    call MoveViewDown
+    call MoveViewUp
+
+    ; Return to code
+    ret
+
+; Move the viewport to the right
+MoveViewRight:
+    ; Load maxx
     ld a, [maxX]
     ld b, a
     ld a, [maxX + 1]
     ld c, a
 
-    ; loap memx
+    ; load memx but in pixels
     ld a, [pixX]
     ld d, a
     ld a, [pixX + 1]
     ld e, a
 
-    ; Check if memx == mapx
+    ; Check if pixx == mapx
     
     ; b - d = ?
     ld a, b
@@ -121,8 +200,8 @@ moveViewPortx1y1:
 
     jp z, .SkipAllRight
 
-    ; Load $FF43 into a
-    ld a, [$FF43] ; [$FF43] is Viewport X
+    ; Load SCX into a
+    ld a, [SCX] ; [SCX] is Viewport X
     and a, %00000111
     ; Only load a column and increment memX if the viewport is divisible by 8
     jp nz, .skip1 ; Skip the column drawing code if not zero
@@ -138,9 +217,9 @@ moveViewPortx1y1:
     ld a, [joypadState]
     and a, %00010000
     jp z, .rOff
-    ld a, [$FF43]
+    ld a, [SCX]
     add a, 1
-    ld [$FF43], a
+    ld [SCX], a
 
     ; increment pixX
     ld a, [pixX]
@@ -153,16 +232,31 @@ moveViewPortx1y1:
     ld a, c
     ld [pixX+1], a
 
+    ; decrement XOffset
+    ld a, [XOffset]
+    ld h, a
+    ld a, [XOffset+1]
+    ld l, a
+    ld bc, (-1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [XOffset], a
+    ld a, l
+    ld [XOffset+1], a
+
 .rOff
 .SkipAllRight:
-    
+    ret
+
+; Move the viewport to the left
+MoveViewLeft:
     ; Check if zero
     ; Load memx
     ld a, [memX]
     ld b, a
     ld a, [memX + 1]
     ld c, a
-    ld a, [$FF43]
+    ld a, [SCX]
     or a, b
     or a, c
     jp z, .SkipAllLeft
@@ -171,9 +265,9 @@ moveViewPortx1y1:
     ld a, [joypadState]
     and a, %00100000
     jp z, .lOff
-    ld a, [$FF43]
+    ld a, [SCX]
     sub a, 1
-    ld [$FF43], a
+    ld [SCX], a
 
     ; decrement pixX
     ld a, [pixX]
@@ -186,10 +280,22 @@ moveViewPortx1y1:
     ld a, c
     ld [pixX+1], a
 
+    ; increment XOffset
+    ld a, [XOffset]
+    ld h, a
+    ld a, [XOffset+1]
+    ld l, a
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [XOffset], a
+    ld a, l
+    ld [XOffset+1], a
+
 .lOff
 
-    ; Load $FF43 into a
-    ld a, [$FF43] ; [$FF43] is Viewport X
+    ; Load SCX into a
+    ld a, [SCX] ; [SCX] is Viewport X
     and a, %00000111
     ; Only load a column and increment memX if the viewport is divisible by 8
     jp nz, .skip2 ; Skip the column drawing code if not zero
@@ -203,30 +309,58 @@ moveViewPortx1y1:
 .skip2:
 
 .SkipAllLeft:
+    ret
 
-    ; Vertical  
-    ; Working vertical movement
+; Move the view down
+MoveViewDown:
     ld a, [joypadState]
     and a, %10000000
     jp z, .dskip  ; Input
-    ld a, [$FF42]
+    ld a, [SCY]
     cp a, $70 ; clamp
     jp nc, .dskip  ; clamp
     add a, 1
-    ld [$FF42], a
-.dskip:  ; clamp
+    ld [SCY], a
 
+    ; decrement YOffset
+    ld a, [YOffset]
+    ld h, a
+    ld a, [YOffset+1]
+    ld l, a
+    ld bc, (-1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [YOffset], a
+    ld a, l
+    ld [YOffset+1], a
+
+.dskip:  ; clamp
+    ret
+
+; Move the view up
+MoveViewUp:
     ld a, [joypadState]
     and a, %01000000
     jp z, .uskip  ; Input
-    ld a, [$FF42]
+    ld a, [SCY]
     cp a, $01 ; clamp
     jp c, .uskip ; clamp
     sub a, 1
-    ld [$FF42], a
-.uskip: ; clamp
+    ld [SCY], a
 
-    ; Return to code
+    ; increment YOffset
+    ld a, [YOffset]
+    ld h, a
+    ld a, [YOffset+1]
+    ld l, a
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [YOffset], a
+    ld a, l
+    ld [YOffset+1], a
+    
+.uskip: ; clamp
     ret
 
 ; Get top and to the right
@@ -239,7 +373,7 @@ getNextColumnRight:
     ld c, a
 
     ; Check if the viewport is 0 
-    ld a, [$FF43]
+    ld a, [SCX]
     or b
     or c
     
@@ -273,7 +407,7 @@ getNextColumnRight:
     ; Setting HL
 
     ; Get screen position
-    ld a, [$FF43]
+    ld a, [SCX]
     ; Divide by 8
     sra a
     sra a
@@ -345,7 +479,7 @@ getNextColumnLeft:
     ; Setting HL
 
     ; Get screen position
-    ld a, [$FF43]
+    ld a, [SCX]
     ; Divide by 8
     sra a
     sra a
@@ -432,8 +566,9 @@ setTileForColumn:
     ; Add the map width to DE
 
     ; Load HL into BC for now.
-    ld b, h
-    ld c, l
+    ;ld b, h
+    ;ld c, l
+    push hl
 
     ; Load the map width into HL
     ld a, [mapX]
@@ -448,9 +583,10 @@ setTileForColumn:
     ld e, l
 
     ; Load BC back to HL
-    ld h, b
-    ld l, c
-    
+    ;ld h, b
+    ;ld l, c
+    pop hl
+
     ; Add the 32 to HL 
 
     ; Add 32 to hl
@@ -485,7 +621,7 @@ disableLCD:
 
 ; Turn on the LCD
 enableLCD:
-    ld a, LCDCF_BGON | LCDCF_BG8000 | LCDCF_ON
+    ld a, LCDCF_BGON | LCDCF_BG8800 | LCDCF_ON | LCDCF_OBJON | LCDCF_OBJ16
     ldh [rLCDC], a
     ; Return to code
     ret
@@ -494,32 +630,26 @@ enableLCD:
 loadPalette:
     ld a, %11100100
     ld [rBGP], a
+    ld a, %11100100
+    ld [rOBP0], a
     ; Return to code
     ret 
      
 ; Copy grassy tiles into registers to be loaded
 copyGrassyTiles:
     ld de, GrassyTiles
-    ld hl, $8000
+    ld hl, $9000
     ld bc, GrassyTiles.end - GrassyTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
-    jp pLoadTiles
-
-; Loads the copied graphics into VRAM - Loads the tileset into the VRAM at $8000
-; NEVER CALL THIS FUNCTION
-pLoadTiles:
-.copyTilesLoop:
-    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
-    ld a, [de]
-    ld [hli], a
-    inc de
-    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, .copyTilesLoop
-    ; Return to code
-    ret
+    jp memcpy
+     
+; Copy sprite tiles into registers to be loaded
+copySpriteTiles:
+    ld de, SpriteTiles
+    ld hl, $8000
+    ld bc, SpriteTiles.end - SpriteTiles ; We set bc to the amount of bytes to copy
+    ; Push copied tileset to VRAM
+    jp memcpy
 
 ; Copy HillSide tile map into registers to be loaded
 copyHillSideMap:
@@ -527,7 +657,7 @@ copyHillSideMap:
     ld hl, $9800
     ld bc, HillSideTilemap.end - HillSideTilemap ; We set bc to the amount of bytes to copy
     ; Push copied tilemap to VRAM
-    jp pLoadMap
+    jp memcpy
 
 ; Copy HillMiddle tile map into registers to be loaded
 copyHillMiddleMap:
@@ -535,23 +665,7 @@ copyHillMiddleMap:
     ld hl, $9800
     ld bc, HillMiddleTilemap.end - HillMiddleTilemap ; We set bc to the amount of bytes to copy
     ; Push copied tilemap to VRAM
-    jp pLoadMap
-
-; Loads the copied tilemap into VRAM - Loads the map into the VRAM at $9800
-; NEVER CALL THIS FUNCTION
-pLoadMap:
-.copyTileMapLoop:
-    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
-    ld a, [de]
-    ld [hli], a
-    inc de
-    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
-    dec bc
-    ld a, b
-    or a, c
-    jp nz, .copyTileMapLoop
-    ; Return to code
-    ret 
+    jp memcpy 
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap:
@@ -616,8 +730,9 @@ pLoadExtendedMap:
     jp z, .end
 
     ; Save HL
-    ld b, h
-    ld c, l
+    ;ld b, h
+    ;ld c, l
+    push hl
 
     ; Get mapX
     ld a, [mapX]
@@ -642,8 +757,9 @@ pLoadExtendedMap:
     ld e, l
 
     ; Restore HL
-    ld h, b
-    ld l, c
+    ;ld h, b
+    ;ld l, c
+    pop hl
 
     ; Loop?
     jp .screenLoop
@@ -825,6 +941,186 @@ HLTimes32:
     ; Return to code
     ret
 
+; ----------------
+; Sprite functions
+; ----------------
+
+; Reset sprite positions
+ResetPositions:
+    ; Reset Positions
+    ld c, 4
+    ld hl, wSimplePosition
+    xor a, a
+  : ld [hli], a
+    dec c
+    jr nz, :-
+    ret
+
+; Initiailize structs
+InitStructs:
+    ; Init structs
+    ld hl, PlayerSprite_YPos
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_XPos
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    /*ld hl, PlayerSprite_YOffset
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_XOffset
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a*/
+    ld hl, PlayerSprite_MetaSprite
+    ld bc, PlayerMetasprite
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+
+    ret
+
+; Render all sprite structs
+RenderStructs:
+    ; Render Metasprite
+    ; Get the sprite address
+    ld a, [PlayerSprite_MetaSprite]
+    ld b, a
+    ld a, [PlayerSprite_MetaSprite + 1]
+    ld c, a
+    ; Load the address into HL
+    ld h, b
+    ld l, c
+    ; Get the YPos of the sprite
+    ld a, [PlayerSprite_YPos]
+    ld b, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld c, a
+    ; Save hl
+    push hl
+    ; Get the YOffset and add to YPos
+    ld h, b
+    ld l, c
+    ld a, [YOffset]
+    ld b, a
+    ld a, [YOffset + 1]
+    ld c, a
+    ; Add offset
+    add hl, bc
+    ; Load new YPos
+    ld b, h
+    ld c, l
+    ; Save bc
+    push bc
+    ; Get the Xposition
+    ld a, [PlayerSprite_XPos]
+    ld d, a
+    ld a, [PlayerSprite_XPos + 1]
+    ld e, a
+    ; Get the XOffset and add to XPos
+    ld h, d
+    ld l, e
+    ld a, [XOffset]
+    ld d, a
+    ld a, [XOffset + 1]
+    ld e, a
+    ; Add offset
+    add hl, de
+    ; Load new YPos
+    ld d, h
+    ld e, l
+    ; Load hl and bc
+    pop bc
+    pop hl
+    
+    ; Check if the sprite is at FF (exception to rule)
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $FF
+    cp a, d
+    ; Draw if zero
+    jp z, .CheckY
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $0A
+    cp a, d
+    ; Jump if zero or carry
+    jp z, .skip
+    jp c, .skip
+
+.CheckY:
+    
+    ; Check if the sprite is at FF (exception to rule)
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $FF
+    cp a, b
+    ; Draw if zero
+    jp z, .GoAndDraw
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $0A
+    cp a, b
+    ; Jump if zero or carry
+    jp z, .skip
+    jp c, .skip
+
+.GoAndDraw:
+
+    ; Draw the sprite
+    call RenderMetasprite
+
+    ; Skip
+.skip:
+
+    ret
+
+; Set memory to value
+; @param d - value
+; @param hl - destination
+; @param bc - counter
+; @clobbers a
+memset::
+.loop:
+    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
+    ld a, d
+    ld [hli], a
+
+    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
+    dec bc
+    ld a, b
+    or a, c
+    jp nz, .loop
+    ; Return to code
+    ret
+
+; Copy memory from address memory to value
+; @param de - source address
+; @param hl - destination
+; @param bc - counter
+; @clobbers a
+memcpy::
+.loop:
+    ; Copy a byte from ROM to VRAM, and increase hl, de to the next location
+    ld a, [de]
+    ld [hli], a
+    inc de
+    ; Decrease the amount of bytes we still need to copy and check if the amount left is zero
+    dec bc
+    ld a, b
+    or a, c
+    jp nz, .loop
+    ; Return to code
+    ret 
+
 SECTION "Graphics", ROM0
 
 ; Grassy tile data
@@ -832,3 +1128,7 @@ GrassyTiles::
     INCBIN "res/GrassyTiles.2bpp"
     .end:
 
+; Sprite tile data
+SpriteTiles::
+    INCBIN "res/SpriteTiles.2bpp"
+    .end:
