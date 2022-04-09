@@ -52,6 +52,10 @@ vblankHandler:
 main:
     ; Set WRAM
     ld a, $00
+    ld [YOffset], a
+    ld [YOffset+1], a
+    ld [XOffset], a
+    ld [XOffset+1], a
     ld [mapX], a
     ld [mapX+1], a
     ld [maxX], a
@@ -128,6 +132,18 @@ gameLoop:
     ; Draw all structs
     call RenderStructs
 
+    ; Move the sprite
+    /*ld a, [PlayerSprite_YPos]
+    ld h, a 
+    ld a, [PlayerSprite_YPos + 1]
+    ld l, a 
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [PlayerSprite_YPos], a
+    ld a, l
+    ld [PlayerSprite_YPos+1], a*/
+
     ; Update the joypad
     call updateJoypadState
 
@@ -146,27 +162,30 @@ gameLoop:
 
 ; Move the viewport
 moveViewPortx1y1:    
-    ; Wait for VBlank, otherwise screen dies in a fire (glitchiness)
-
-    ; SCX - Scroll X
-    ; SCY - Scroll Y
-    ; b = x
-    ; c = y
     
-    ; Check if mapx
-    ; Load mapx
+    call MoveViewRight
+    call MoveViewLeft
+    call MoveViewDown
+    call MoveViewUp
+
+    ; Return to code
+    ret
+
+; Move the viewport to the right
+MoveViewRight:
+    ; Load maxx
     ld a, [maxX]
     ld b, a
     ld a, [maxX + 1]
     ld c, a
 
-    ; load memx
+    ; load memx but in pixels
     ld a, [pixX]
     ld d, a
     ld a, [pixX + 1]
     ld e, a
 
-    ; Check if memx == mapx
+    ; Check if pixx == mapx
     
     ; b - d = ?
     ld a, b
@@ -213,9 +232,24 @@ moveViewPortx1y1:
     ld a, c
     ld [pixX+1], a
 
+    ; decrement XOffset
+    ld a, [XOffset]
+    ld h, a
+    ld a, [XOffset+1]
+    ld l, a
+    ld bc, (-1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [XOffset], a
+    ld a, l
+    ld [XOffset+1], a
+
 .rOff
 .SkipAllRight:
-    
+    ret
+
+; Move the viewport to the left
+MoveViewLeft:
     ; Check if zero
     ; Load memx
     ld a, [memX]
@@ -246,6 +280,18 @@ moveViewPortx1y1:
     ld a, c
     ld [pixX+1], a
 
+    ; increment XOffset
+    ld a, [XOffset]
+    ld h, a
+    ld a, [XOffset+1]
+    ld l, a
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [XOffset], a
+    ld a, l
+    ld [XOffset+1], a
+
 .lOff
 
     ; Load SCX into a
@@ -263,9 +309,10 @@ moveViewPortx1y1:
 .skip2:
 
 .SkipAllLeft:
+    ret
 
-    ; Vertical  
-    ; Working vertical movement
+; Move the view down
+MoveViewDown:
     ld a, [joypadState]
     and a, %10000000
     jp z, .dskip  ; Input
@@ -274,8 +321,24 @@ moveViewPortx1y1:
     jp nc, .dskip  ; clamp
     add a, 1
     ld [SCY], a
-.dskip:  ; clamp
 
+    ; decrement YOffset
+    ld a, [YOffset]
+    ld h, a
+    ld a, [YOffset+1]
+    ld l, a
+    ld bc, (-1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [YOffset], a
+    ld a, l
+    ld [YOffset+1], a
+
+.dskip:  ; clamp
+    ret
+
+; Move the view up
+MoveViewUp:
     ld a, [joypadState]
     and a, %01000000
     jp z, .uskip  ; Input
@@ -284,9 +347,20 @@ moveViewPortx1y1:
     jp c, .uskip ; clamp
     sub a, 1
     ld [SCY], a
-.uskip: ; clamp
 
-    ; Return to code
+    ; increment YOffset
+    ld a, [YOffset]
+    ld h, a
+    ld a, [YOffset+1]
+    ld l, a
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ld a, h
+    ld [YOffset], a
+    ld a, l
+    ld [YOffset+1], a
+    
+.uskip: ; clamp
     ret
 
 ; Get top and to the right
@@ -897,7 +971,7 @@ InitStructs:
     ld [hli], a
     ld a, c
     ld [hl], a
-    ld hl, PlayerSprite_YOffset
+    /*ld hl, PlayerSprite_YOffset
     ld bc, (0.0 >> 12) & $FFFF
     ld a, b
     ld [hli], a
@@ -908,7 +982,7 @@ InitStructs:
     ld a, b
     ld [hli], a
     ld a, c
-    ld [hl], a
+    ld [hl], a*/
     ld hl, PlayerSprite_MetaSprite
     ld bc, PlayerMetasprite
     ld a, b
@@ -939,9 +1013,9 @@ RenderStructs:
     ; Get the YOffset and add to YPos
     ld h, b
     ld l, c
-    ld a, [PlayerSprite_YOffset]
+    ld a, [YOffset]
     ld b, a
-    ld a, [PlayerSprite_YOffset + 1]
+    ld a, [YOffset + 1]
     ld c, a
     ; Add offset
     add hl, bc
@@ -958,9 +1032,9 @@ RenderStructs:
     ; Get the XOffset and add to XPos
     ld h, d
     ld l, e
-    ld a, [PlayerSprite_XOffset]
+    ld a, [XOffset]
     ld d, a
-    ld a, [PlayerSprite_XOffset + 1]
+    ld a, [XOffset + 1]
     ld e, a
     ; Add offset
     add hl, de
@@ -970,8 +1044,42 @@ RenderStructs:
     ; Load hl and bc
     pop bc
     pop hl
+    
+    ; Check if the sprite is at FF (exception to rule)
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $FF
+    cp a, d
+    ; Draw if zero
+    jp z, .CheckY
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $0A
+    cp a, d
+    ; Jump if zero or carry
+    jp z, .skip
+    jp c, .skip
+
+.CheckY:
+    
+    ; Check if the sprite is at FF (exception to rule)
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $FF
+    cp a, b
+    ; Draw if zero
+    jp z, .GoAndDraw
+    ; Check if the sprite is off-screen on the x-axis
+    ld a, $0A
+    cp a, b
+    ; Jump if zero or carry
+    jp z, .skip
+    jp c, .skip
+
+.GoAndDraw:
+
     ; Draw the sprite
     call RenderMetasprite
+
+    ; Skip
+.skip:
 
     ret
 

@@ -5,8 +5,6 @@ INCLUDE "structs.inc"
     struct metaSpriteTemplate
         bytes 2, YPos
         bytes 2, XPos
-        bytes 2, YOffset
-        bytes 2, XOffset
         bytes 2, MetaSprite
     end_struct
 
@@ -35,6 +33,12 @@ SECTION "Globals", WRAM0
 
 ; Struct references
     dstruct metaSpriteTemplate, PlayerSprite
+
+; Sprite global offset
+YOffset::
+    ds 2
+XOffset::
+    ds 2
 
 ; Q12.4 fixed-point X posiition
 MetaspritePosition::
