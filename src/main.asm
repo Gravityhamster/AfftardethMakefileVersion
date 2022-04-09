@@ -50,7 +50,7 @@ vblankHandler:
 ; Main - This is where the program starts
 ; ---------------------------------------
 main:
-    ; Set map x
+    ; Set WRAM
     ld a, $00
     ld [mapX], a
     ld [mapX+1], a
@@ -67,25 +67,8 @@ main:
     ld [SCX], a
     ld [SCY], a
 
-    ; Init structs
-    ld hl, PlayerSprite_YPos
-    ld bc, (40.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ld hl, PlayerSprite_XPos
-    ld bc, (40.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ld hl, PlayerSprite_MetaSprite
-    ld bc, PlayerMetasprite
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
+    ; Initialize all sprite structs
+    call InitStructs
 
     ; Turn off the LCD
     call disableLCD
@@ -142,62 +125,17 @@ gameLoop:
     ; Reset shadow oam
     call ResetShadowOAM
 
-    /*; Setup a single sprite
-    ld b, 10
-    ld c, 10
-    ld d, 0
-    ld e, 0
-    call RenderSimpleSprite
-    ; Setup a single sprite
-    ld b, 10
-    ld c, 18
-    ld d, 1
-    ld e, 0
-    call RenderSimpleSprite
-    ; Setup a single sprite
-    ld b, 18
-    ld c, 10
-    ld d, 2
-    ld e, 0
-    call RenderSimpleSprite
-    ; Setup a single sprite
-    ld b, 18
-    ld c, 18
-    ld d, 3
-    ld e, 0
-    call RenderSimpleSprite*/
-
-    ; Set the Metasprite position to 0
-    ;ld bc, (40.0 >> 12) & $FFFF
-    ;ld a, c
-    ;ld [MetaspritePosition], a
-    ;ld a, b
-    ;ld [MetaspritePosition + 1], a
-
-    ; Rend Metasprite
-    ld a, [PlayerSprite_MetaSprite]
-    ld b, a
-    ld a, [PlayerSprite_MetaSprite + 1]
-    ld c, a
-    ld h, b
-    ld l, c
-    ld a, [PlayerSprite_YPos]
-    ld b, a
-    ld a, [PlayerSprite_YPos + 1]
-    ld c, a
-    ld a, [PlayerSprite_XPos]
-    ld d, a
-    ld a, [PlayerSprite_XPos + 1]
-    ld e, a
-    call RenderMetasprite
-
+    ; Draw all structs
+    call RenderStructs
 
     ; Update the joypad
     call updateJoypadState
+
     ; Move the screen
     REPT 4
     call moveViewPortx1y1
     ENDR
+    
     ; Loop
     halt
     jp gameLoop
@@ -942,6 +880,99 @@ ResetPositions:
   : ld [hli], a
     dec c
     jr nz, :-
+    ret
+
+; Initiailize structs
+InitStructs:
+    ; Init structs
+    ld hl, PlayerSprite_YPos
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_XPos
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_YOffset
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_XOffset
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_MetaSprite
+    ld bc, PlayerMetasprite
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+
+    ret
+
+; Render all sprite structs
+RenderStructs:
+    ; Render Metasprite
+    ; Get the sprite address
+    ld a, [PlayerSprite_MetaSprite]
+    ld b, a
+    ld a, [PlayerSprite_MetaSprite + 1]
+    ld c, a
+    ; Load the address into HL
+    ld h, b
+    ld l, c
+    ; Get the YPos of the sprite
+    ld a, [PlayerSprite_YPos]
+    ld b, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld c, a
+    ; Save hl
+    push hl
+    ; Get the YOffset and add to YPos
+    ld h, b
+    ld l, c
+    ld a, [PlayerSprite_YOffset]
+    ld b, a
+    ld a, [PlayerSprite_YOffset + 1]
+    ld c, a
+    ; Add offset
+    add hl, bc
+    ; Load new YPos
+    ld b, h
+    ld c, l
+    ; Save bc
+    push bc
+    ; Get the Xposition
+    ld a, [PlayerSprite_XPos]
+    ld d, a
+    ld a, [PlayerSprite_XPos + 1]
+    ld e, a
+    ; Get the XOffset and add to XPos
+    ld h, d
+    ld l, e
+    ld a, [PlayerSprite_XOffset]
+    ld d, a
+    ld a, [PlayerSprite_XOffset + 1]
+    ld e, a
+    ; Add offset
+    add hl, de
+    ; Load new YPos
+    ld d, h
+    ld e, l
+    ; Load hl and bc
+    pop bc
+    pop hl
+    ; Draw the sprite
+    call RenderMetasprite
+
     ret
 
 ; Set memory to value

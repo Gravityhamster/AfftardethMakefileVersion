@@ -5,6 +5,8 @@ INCLUDE "structs.inc"
     struct metaSpriteTemplate
         bytes 2, YPos
         bytes 2, XPos
+        bytes 2, YOffset
+        bytes 2, XOffset
         bytes 2, MetaSprite
     end_struct
 
