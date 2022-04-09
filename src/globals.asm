@@ -1,3 +1,14 @@
+; Include the struct lib
+INCLUDE "structs.inc"
+
+; Define structs
+    struct metaSpriteTemplate
+        bytes 2, YPos
+        bytes 2, XPos
+        bytes 2, MetaSprite
+    end_struct
+
+
 SECTION "Hard Globals", ROM0
 
 /*; Meta sprite 8x8:
@@ -19,6 +30,9 @@ SECTION "Globals", WRAM0
 ; -------------------------------------------------------------------------------
 ; Work variables
 ; -------------------------------------------------------------------------------
+
+; Struct references
+    dstruct metaSpriteTemplate, PlayerSprite
 
 ; Q12.4 fixed-point X posiition
 MetaspritePosition::

@@ -6,7 +6,6 @@
 
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
-INCLUDE "structs.inc"
 
 ; Handle interrupts
 SECTION "vblankInterrupt", ROM0[$040]
@@ -67,6 +66,26 @@ main:
     ld [joypadPressed], a
     ld [SCX], a
     ld [SCY], a
+
+    ; Init structs
+    ld hl, PlayerSprite_YPos
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_XPos
+    ld bc, (40.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ld hl, PlayerSprite_MetaSprite
+    ld bc, PlayerMetasprite
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
 
     ; Turn off the LCD
     call disableLCD
@@ -149,19 +168,27 @@ gameLoop:
     call RenderSimpleSprite*/
 
     ; Set the Metasprite position to 0
-    ld bc, (40.0 >> 12) & $FFFF
-    ld a, c
-    ld [MetaspritePosition], a
-    ld a, b
-    ld [MetaspritePosition + 1], a
+    ;ld bc, (40.0 >> 12) & $FFFF
+    ;ld a, c
+    ;ld [MetaspritePosition], a
+    ;ld a, b
+    ;ld [MetaspritePosition + 1], a
 
     ; Rend Metasprite
-    ld bc, (40.0 >> 12) & $FFFF
-    ld a, [MetaspritePosition]
-    ld e, a
-    ld a, [MetaspritePosition + 1]
+    ld a, [PlayerSprite_MetaSprite]
+    ld b, a
+    ld a, [PlayerSprite_MetaSprite + 1]
+    ld c, a
+    ld h, b
+    ld l, c
+    ld a, [PlayerSprite_YPos]
+    ld b, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld c, a
+    ld a, [PlayerSprite_XPos]
     ld d, a
-    ld hl, PlayerMetasprite
+    ld a, [PlayerSprite_XPos + 1]
+    ld e, a
     call RenderMetasprite
 
 
