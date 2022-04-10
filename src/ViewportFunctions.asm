@@ -58,7 +58,10 @@ MoveViewRight::
     and a, %00010000
     ; Draw column if joypadR
     call nz, getNextColumnRight
-    
+
+    ld a, [SCX]
+    ld [prevX], a
+
 .skip1:
 
     ld a, [joypadState]
@@ -445,4 +448,9 @@ setTileForColumn::
     ld h, a
 
     ; Return to code
+    ret
+    
+; Move to the 
+moveViewToFocusPoint::
+
     ret

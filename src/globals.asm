@@ -44,6 +44,16 @@ SECTION "Globals", WRAM0
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; Target location of the view
+viewTargetX:
+    ds 1
+viewTargetY:
+    ds 1
+
+; Last view position
+prevX::
+    ds 1
+
 ; Struct references
     dstruct metaSpriteTemplate, PlayerSprite
 

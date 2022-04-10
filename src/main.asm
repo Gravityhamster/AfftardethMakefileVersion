@@ -52,6 +52,7 @@ vblankHandler:
 main:
     ; Set WRAM
     ld a, $00
+    ld [prevX], a
     ld [YOffset], a
     ld [YOffset+1], a
     ld [XOffset], a
@@ -139,9 +140,7 @@ gameLoop:
     ;call controlPlayer
 
     ; Move the screen
-    REPT 4
-    call moveViewPortx1y1
-    ENDR
+    call moveViewToFocusPoint
     
     ; Loop
     halt
