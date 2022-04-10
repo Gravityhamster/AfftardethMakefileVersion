@@ -959,30 +959,26 @@ ResetPositions:
 ; Initiailize structs
 InitStructs:
     ; Init structs
+    call InitPlayerStruct
+    ret
+
+; Init player struct
+InitPlayerStruct:
+    ; Load Y position
     ld hl, PlayerSprite_YPos
     ld bc, (40.0 >> 12) & $FFFF
     ld a, b
     ld [hli], a
     ld a, c
     ld [hl], a
+    ; Load X position
     ld hl, PlayerSprite_XPos
     ld bc, (40.0 >> 12) & $FFFF
     ld a, b
     ld [hli], a
     ld a, c
     ld [hl], a
-    /*ld hl, PlayerSprite_YOffset
-    ld bc, (0.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ld hl, PlayerSprite_XOffset
-    ld bc, (0.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a*/
+    ; Load sprite
     ld hl, PlayerSprite_MetaSprite
     ld bc, PlayerMetasprite
     ld a, b
@@ -994,12 +990,19 @@ InitStructs:
 
 ; Render all sprite structs
 RenderStructs:
-    ; Render Metasprite
+    call RenderPlayer
+    ret
+
+; Render player sprite
+; Render Metasprite
+RenderPlayer:
     ; Get the sprite address
     ld a, [PlayerSprite_MetaSprite]
     ld b, a
     ld a, [PlayerSprite_MetaSprite + 1]
     ld c, a
+    or a, b
+    jp z, .skip
     ; Load the address into HL
     ld h, b
     ld l, c
