@@ -25,6 +25,19 @@ PlayerMetasprite::
     db 16, 16, 2, 0
     db 128
 
+; Tile sets
+SECTION "Graphics", ROM0
+
+; Grassy tile data
+GrassyTiles::
+    INCBIN "res/GrassyTiles.2bpp"
+    .end::
+
+; Sprite tile data
+SpriteTiles::
+    INCBIN "res/SpriteTiles.2bpp"
+    .end::
+
 SECTION "Globals", WRAM0
 
 ; -------------------------------------------------------------------------------
