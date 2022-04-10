@@ -71,6 +71,10 @@ main:
     ld [joypadPressed], a
     ld [SCX], a
     ld [SCY], a
+    ld a, $00
+    ld [viewTargetX], a
+    ld [viewTargetX+1], a
+    ld [viewTargetY], a
 
     ; Initialize all sprite structs
     call InitStructs
@@ -136,8 +140,10 @@ gameLoop:
     ; Update the joypad
     call updateJoypadState
 
-    ;; Control the player
-    ;call controlPlayer
+    ; Control the player
+    REPT 4
+    call controlPlayer
+    ENDR
 
     ; Move the screen
     call moveViewToFocusPoint

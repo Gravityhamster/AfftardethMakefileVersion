@@ -45,9 +45,9 @@ SECTION "Globals", WRAM0
 ; -------------------------------------------------------------------------------
 
 ; Target location of the view
-viewTargetX:
-    ds 1
-viewTargetY:
+viewTargetX::
+    ds 2
+viewTargetY::
     ds 1
 
 ; Last view position
