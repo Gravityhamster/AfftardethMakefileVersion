@@ -26,14 +26,14 @@ InitStructs::
 InitPlayerStruct::
     ; Load Y position
     ld hl, PlayerSprite_YPos
-    ld bc, (40.0 >> 12) & $FFFF
+    ld bc, (0.0 >> 12) & $FFFF
     ld a, b
     ld [hli], a
     ld a, c
     ld [hl], a
     ; Load X position
     ld hl, PlayerSprite_XPos
-    ld bc, (40.0 >> 12) & $FFFF
+    ld bc, (0.0 >> 12) & $FFFF
     ld a, b
     ld [hli], a
     ld a, c
@@ -115,7 +115,7 @@ RenderPlayer::
     ; Draw if zero
     jp z, .CheckY
     ; Check if the sprite is off-screen on the x-axis
-    ld a, $0A
+    ld a, $0B
     cp a, d
     ; Jump if zero or carry
     jp z, .skip
@@ -183,3 +183,74 @@ memcpy::
     jp nz, .loop
     ; Return to code
     ret 
+
+; Add to memory location
+; @param de - memory reference
+; @param bc - amount to move by (Q12.4)
+; ---
+; Move sprite example:
+; ld de, PlayerSprite_XPos
+; ld bc, (1.0 >> 12) & $FFFF
+; call AddToMemory16Bit
+AddToMemory16Bit::
+    ; Get input variable
+    ld a, [de]
+    ld h, a
+    inc de
+    ld a, [de]
+    ld l, a
+    dec de
+    ; Add BC param to HL
+    add hl, bc
+    ; Load back to input variable
+    ld a, h
+    ld [de], a
+    inc de
+    ld a, l
+    ld [de], a
+    ; Return
+    ret
+
+; Control the player
+controlPlayer::
+    ; Check joypad right
+    ld a, [joypadState]
+    and a, %00010000
+    jp z, .skipRight
+    ; Load params and move sprite
+    ld de, PlayerSprite_XPos
+    ld bc, (1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+.skipRight:
+
+    ; Check joypad left
+    ld a, [joypadState]
+    and a, %00100000
+    jp z, .skipLeft
+    ; Load params and move sprite
+    ld de, PlayerSprite_XPos
+    ld bc, (-1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+.skipLeft:
+
+    ; Check joypad down
+    ld a, [joypadState]
+    and a, %10000000
+    jp z, .skipDown
+    ; Load params and move sprite
+    ld de, PlayerSprite_YPos
+    ld bc, (1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+.skipDown:
+
+    ; Check joypad up
+    ld a, [joypadState]
+    and a, %01000000
+    jp z, .skipUp
+    ; Load params and move sprite
+    ld de, PlayerSprite_YPos
+    ld bc, (-1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+.skipUp:
+
+    ret

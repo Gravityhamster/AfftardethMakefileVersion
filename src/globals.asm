@@ -21,8 +21,8 @@ PlayerMetasprite::
 
 ; Meta sprite 8x16:
 PlayerMetasprite::
-    db 16, 8, 0, 0
-    db 16, 16, 2, 0
+    db 0, 0, 0, 0
+    db 0, 8, 2, 0
     db 128
 
 ; Tile sets

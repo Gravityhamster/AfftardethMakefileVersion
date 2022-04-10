@@ -132,20 +132,11 @@ gameLoop:
     ; Draw all structs
     call RenderStructs
 
-    ; Move the sprite
-    /*ld a, [PlayerSprite_YPos]
-    ld h, a 
-    ld a, [PlayerSprite_YPos + 1]
-    ld l, a 
-    ld bc, (1.0 >> 12) & $FFFF
-    add hl, bc
-    ld a, h
-    ld [PlayerSprite_YPos], a
-    ld a, l
-    ld [PlayerSprite_YPos+1], a*/
-
     ; Update the joypad
     call updateJoypadState
+
+    ;; Control the player
+    ;call controlPlayer
 
     ; Move the screen
     REPT 4
