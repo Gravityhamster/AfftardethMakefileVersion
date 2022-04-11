@@ -223,15 +223,15 @@ controlPlayer::
     call AddToMemory16Bit
 
     ; Move the target right
-    ld a, [viewTargetX]
-    ld b, a
-    ld a, [viewTargetX + 1]
-    ld c, a
-    inc bc
-    ld a, b
-    ld [viewTargetX], a
-    ld a, c
-    ld [viewTargetX + 1], a
+    ;ld a, [viewTargetX]
+    ;ld b, a
+    ;ld a, [viewTargetX + 1]
+    ;ld c, a
+    ;inc bc
+    ;ld a, b
+    ;ld [viewTargetX], a
+    ;ld a, c
+    ;ld [viewTargetX + 1], a
 
 .skipRight:
 
@@ -245,15 +245,15 @@ controlPlayer::
     call AddToMemory16Bit
 
     ; Move the target left
-    ld a, [viewTargetX]
-    ld b, a
-    ld a, [viewTargetX + 1]
-    ld c, a
-    dec bc
-    ld a, b
-    ld [viewTargetX], a
-    ld a, c
-    ld [viewTargetX + 1], a
+    ;ld a, [viewTargetX]
+    ;ld b, a
+    ;ld a, [viewTargetX + 1]
+    ;ld c, a
+    ;dec bc
+    ;ld a, b
+    ;ld [viewTargetX], a
+    ;ld a, c
+    ;ld [viewTargetX + 1], a
 
 .skipLeft:
 
@@ -266,10 +266,10 @@ controlPlayer::
     ld bc, (1.0 >> 12) & $FFFF
     call AddToMemory16Bit
 
-    ; Move the target down
-    ld a, [viewTargetY]
-    inc a
-    ld [viewTargetY], a
+    ;; Move the target down
+    ;ld a, [viewTargetY]
+    ;inc a
+    ;ld [viewTargetY], a
 
 .skipDown:
 
@@ -282,10 +282,10 @@ controlPlayer::
     ld bc, (-1.0 >> 12) & $FFFF
     call AddToMemory16Bit
     
-    ; Move the target down
-    ld a, [viewTargetY]
-    dec a
-    ld [viewTargetY], a
+    ;; Move the target down
+    ;ld a, [viewTargetY]
+    ;dec a
+    ;ld [viewTargetY], a
 
 .skipUp:
 

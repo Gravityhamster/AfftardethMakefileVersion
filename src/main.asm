@@ -50,6 +50,7 @@ vblankHandler:
 ; Main - This is where the program starts
 ; ---------------------------------------
 main:
+
     ; Set WRAM
     ld a, $00
     ld [prevX], a
@@ -141,9 +142,9 @@ gameLoop:
     call updateJoypadState
 
     ; Control the player
-    REPT 4
+    ;REPT 4
     call controlPlayer
-    ENDR
+    ;ENDR
 
     ; Move the screen
     call moveViewToFocusPoint

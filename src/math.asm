@@ -107,3 +107,28 @@ HLTimes32::
     ;sla b
     ; Return to code
     ret
+
+; Bit shift HL right
+BitshiftHL::
+
+    ; Shift l
+    sra l
+    ; Get h
+    ld a, h
+    ; Okay, now we need to set the highest bit of l to the lowest of h
+    sla a
+    sla a
+    sla a
+    sla a
+    sla a
+    sla a
+    sla a
+    or a, %01111111
+    and a, l
+    ld l, a
+    ; Shift h   
+    sra h
+    ld a, %01111111
+    and a, h
+    ld h, a
+    ret
