@@ -288,5 +288,108 @@ controlPlayer::
     ;ld [viewTargetY], a
 
 .skipUp:
+    
+    ; Set the focal point of the camera
+    call getPlayerFocusPointY
+    call getPlayerFocusPointX
+
+    ret
+
+; Focus on the player
+getPlayerFocusPointY:
+    
+    ld a, [PlayerSprite_YPos]
+    ld h, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld l, a
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    ; If h is 0F and l is FX, then set 0
+    ld a, l
+    cp a, $F0
+    jp c, .doNotTestH
+    ld a, h
+    cp a, $0F
+    jp z, .setZero
+.doNotTestH
+    ; If h is zero, then we need to test
+    ld a, h
+    add a, 0
+    jp nz, .skipTest
+    ; Test if a - 72 is going to cause a negative
+    ld a, l
+    cp a, 92
+    jp c, .setZero
+.skipTest:
+    ld a, [PlayerSprite_YPos]
+    ld h, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld l, a
+    ld bc, (-92.0 >> 12) & $FFFF
+    add hl, bc
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    ld a, l
+    jp .skip
+.setZero:
+    ld a, 0
+.skip:
+    ld [viewTargetY], a
+
+    ret
+
+; Focus on the player
+getPlayerFocusPointX:
+    
+    ld a, [PlayerSprite_XPos]
+    ld h, a
+    ld a, [PlayerSprite_XPos + 1]
+    ld l, a
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    ; If h is 0F and l is FX, then set 0
+    ld a, l
+    cp a, $F0
+    jp c, .doNotTestH
+    ld a, h
+    cp a, $0F
+    jp z, .setZero
+.doNotTestH
+    ; If h is zero, then we need to test
+    ld a, h
+    add a, 0
+    jp nz, .skipTest
+    ; Test if a - 72 is going to cause a negative
+    ld a, l
+    cp a, 80
+    jp c, .setZero
+.skipTest:
+    ld a, [PlayerSprite_XPos]
+    ld h, a
+    ld a, [PlayerSprite_XPos + 1]
+    ld l, a
+    ld bc, (-80.0 >> 12) & $FFFF
+    add hl, bc
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    call BitshiftHL
+    jp .skip
+.setZero:
+    ld a, 0
+    ld h, a
+    ld a, 0
+    ld l, a
+.skip:
+    ld a, h
+    ld [viewTargetX], a
+    ld a, l
+    ld [viewTargetX + 1], a
 
     ret

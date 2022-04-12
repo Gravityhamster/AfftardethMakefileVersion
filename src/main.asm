@@ -142,9 +142,9 @@ gameLoop:
     call updateJoypadState
 
     ; Control the player
-    ;REPT 4
+    REPT 1
     call controlPlayer
-    ;ENDR
+    ENDR
 
     ; Move the screen
     call moveViewToFocusPoint

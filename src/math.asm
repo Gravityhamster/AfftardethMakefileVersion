@@ -123,8 +123,14 @@ BitshiftHL::
     sla a
     sla a
     sla a
-    or a, %01111111
+    and a, %10000000
+    jp nz, .orr
+    ld a, %01111111
     and a, l
+    jp .lode
+.orr:
+    or a, l
+.lode:
     ld l, a
     ; Shift h   
     sra h
