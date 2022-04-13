@@ -28,8 +28,8 @@ SECTION "Game code", ROM0[$150]
 ; VBlank Interrupt
 vblankHandler:
 
-    ; Draw all structs
-    call RenderStructs
+    ;; Draw all structs
+    ;call RenderStructs
     
     ; Push sprites to OAM
     ld a, HIGH(wShadowOAM)
@@ -135,7 +135,7 @@ main:
 ; ---------------------------------------------
 ; gameLoop - This is where the gameLoop happens
 ; ---------------------------------------------
-gameLoop:    
+gameLoop:   
     ; Reset shadow oam
     call ResetShadowOAM
 
@@ -143,13 +143,14 @@ gameLoop:
     call updateJoypadState
 
     ; Control the player
-    ;REPT 1
     call controlPlayer
-    ;ENDR
 
     ; Move the screen
     call moveViewToFocusPoint
-    
+
+    ; Draw all structs
+    call RenderStructs
+
     ; Loop
     halt
     jp gameLoop

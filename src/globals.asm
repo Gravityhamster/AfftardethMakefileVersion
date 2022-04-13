@@ -4,9 +4,9 @@ INCLUDE "structs.inc"
 
 ; Define structs
     struct metaSpriteTemplate
-        bytes 2, MetaSprite
-        bytes 2, YPos
-        bytes 2, XPos
+        bytes 2, MetaSprite ; 0, 1
+        bytes 2, YPos       ; 2, 3
+        bytes 2, XPos       ; 4, 5
     end_struct
 
 

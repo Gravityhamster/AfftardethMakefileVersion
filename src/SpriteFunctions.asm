@@ -19,103 +19,65 @@ ResetPositions::
 ; Initiailize structs
 InitStructs::
     ; Init structs
-    call InitPlayerStruct
-    call InitEnemyStructs
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
+    ld hl, PlayerMetasprite
+    ld bc, (0.0 >> 12) & $FFFF
+    ld de, (0.0 >> 12) & $FFFF
+    call InitSpriteStruct
+    ld hl, EnemySprite1
+    call ldHLToStructAddress
+    ld hl, EnemyMetasprite
+    ld bc, (10.0 >> 12) & $FFFF
+    ld de, (10.0 >> 12) & $FFFF
+    call InitSpriteStruct
+    ld hl, EnemySprite2
+    call ldHLToStructAddress
+    ld hl, EnemyMetasprite
+    ld bc, (20.0 >> 12) & $FFFF
+    ld de, (20.0 >> 12) & $FFFF
+    call InitSpriteStruct
+    ld hl, EnemySprite3
+    call ldHLToStructAddress
+    ld hl, EnemyMetasprite
+    ld bc, (30.0 >> 12) & $FFFF
+    ld de, (30.0 >> 12) & $FFFF
+    call InitSpriteStruct
     ret
 
 ; Init player struct
-InitPlayerStruct::
-    ; Load Y position
-    ld hl, PlayerSprite_YPos
-    ld bc, (0.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ; Load X position
-    ld hl, PlayerSprite_XPos
-    ld bc, (0.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
+; @param StructAddress - sprite struct
+; @param hl - meta sprite
+; @param bc - ypos
+; @param de - xpos
+InitSpriteStruct::
+    ; Save params
+    push de ; xpos
+    push bc ; ypos
+    push hl ; meta sprite
     ; Load sprite
-    ld hl, PlayerSprite_MetaSprite
-    ld bc, PlayerMetasprite
+    call ldStructAddressToHL
+    ; Get sprite data
+    pop bc
+    ; Load sprite data
     ld a, b
     ld [hli], a
     ld a, c
-    ld [hl], a
-
-    ret
-
-; Init enemy structs
-InitEnemyStructs::
-    ; Load Y position
-    ld hl, EnemySprite1_YPos
-    ld bc, (250.0 >> 12) & $FFFF
+    ld [hli], a
+    ; Get ypos data
+    pop bc
+    ; Load ypos data
     ld a, b
     ld [hli], a
     ld a, c
-    ld [hl], a
-    ; Load X position
-    ld hl, EnemySprite1_XPos
-    ld bc, (200.0 >> 12) & $FFFF
+    ld [hli], a
+    ; Get xpos data
+    pop bc
+    ; Load xpos data
     ld a, b
     ld [hli], a
     ld a, c
-    ld [hl], a
-    ; Load sprite
-    ld hl, EnemySprite1_MetaSprite
-    ld bc, EnemyMetasprite
-    ld a, b
     ld [hli], a
-    ld a, c
-    ld [hl], a
-    
-    ; Load Y position
-    ld hl, EnemySprite2_YPos
-    ld bc, (200.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ; Load X position
-    ld hl, EnemySprite2_XPos
-    ld bc, (300.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ; Load sprite
-    ld hl, EnemySprite2_MetaSprite
-    ld bc, EnemyMetasprite
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    
-    ; Load Y position
-    ld hl, EnemySprite3_YPos
-    ld bc, (255.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ; Load X position
-    ld hl, EnemySprite3_XPos
-    ld bc, (240.0 >> 12) & $FFFF
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
-    ; Load sprite
-    ld hl, EnemySprite3_MetaSprite
-    ld bc, EnemyMetasprite
-    ld a, b
-    ld [hli], a
-    ld a, c
-    ld [hl], a
 
     ret
 
@@ -333,17 +295,6 @@ controlPlayer::
     ld bc, (1.0 >> 12) & $FFFF
     call AddToMemory16Bit
 
-    ; Move the target right
-    ;ld a, [viewTargetX]
-    ;ld b, a
-    ;ld a, [viewTargetX + 1]
-    ;ld c, a
-    ;inc bc
-    ;ld a, b
-    ;ld [viewTargetX], a
-    ;ld a, c
-    ;ld [viewTargetX + 1], a
-
 .skipRight:
 
     ; Check joypad left
@@ -354,17 +305,6 @@ controlPlayer::
     ld de, PlayerSprite_XPos
     ld bc, (-1.0 >> 12) & $FFFF
     call AddToMemory16Bit
-
-    ; Move the target left
-    ;ld a, [viewTargetX]
-    ;ld b, a
-    ;ld a, [viewTargetX + 1]
-    ;ld c, a
-    ;dec bc
-    ;ld a, b
-    ;ld [viewTargetX], a
-    ;ld a, c
-    ;ld [viewTargetX + 1], a
 
 .skipLeft:
 
@@ -377,11 +317,6 @@ controlPlayer::
     ld bc, (1.0 >> 12) & $FFFF
     call AddToMemory16Bit
 
-    ;; Move the target down
-    ;ld a, [viewTargetY]
-    ;inc a
-    ;ld [viewTargetY], a
-
 .skipDown:
 
     ; Check joypad up
@@ -392,11 +327,6 @@ controlPlayer::
     ld de, PlayerSprite_YPos
     ld bc, (-1.0 >> 12) & $FFFF
     call AddToMemory16Bit
-    
-    ;; Move the target down
-    ;ld a, [viewTargetY]
-    ;dec a
-    ;ld [viewTargetY], a
 
 .skipUp:
     
