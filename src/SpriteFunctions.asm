@@ -20,6 +20,7 @@ ResetPositions::
 InitStructs::
     ; Init structs
     call InitPlayerStruct
+    call InitEnemyStructs
     ret
 
 ; Init player struct
@@ -48,31 +49,139 @@ InitPlayerStruct::
 
     ret
 
-; Render all sprite structs
-RenderStructs::
-    call RenderPlayer
+; Init enemy structs
+InitEnemyStructs::
+    ; Load Y position
+    ld hl, EnemySprite1_YPos
+    ld bc, (250.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ; Load X position
+    ld hl, EnemySprite1_XPos
+    ld bc, (200.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ; Load sprite
+    ld hl, EnemySprite1_MetaSprite
+    ld bc, EnemyMetasprite
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    
+    ; Load Y position
+    ld hl, EnemySprite2_YPos
+    ld bc, (200.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ; Load X position
+    ld hl, EnemySprite2_XPos
+    ld bc, (300.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ; Load sprite
+    ld hl, EnemySprite2_MetaSprite
+    ld bc, EnemyMetasprite
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    
+    ; Load Y position
+    ld hl, EnemySprite3_YPos
+    ld bc, (255.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ; Load X position
+    ld hl, EnemySprite3_XPos
+    ld bc, (240.0 >> 12) & $FFFF
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+    ; Load sprite
+    ld hl, EnemySprite3_MetaSprite
+    ld bc, EnemyMetasprite
+    ld a, b
+    ld [hli], a
+    ld a, c
+    ld [hl], a
+
     ret
 
-; Render player sprite
+; Render all sprite structs
+RenderStructs::
+    ; Player sprite
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
+    call RenderSprite
+    ; Enemy sprite 1
+    ld hl, EnemySprite1
+    call ldHLToStructAddress
+    call RenderSprite
+    ; Enemy sprite 2
+    ld hl, EnemySprite2
+    call ldHLToStructAddress
+    call RenderSprite
+    ; Enemy sprite 3
+    ld hl, EnemySprite3
+    call ldHLToStructAddress
+    call RenderSprite
+    ret
+
+; Load Address into Register HL
+ldStructAddressToHL::
+    ld a, [structAddress]
+    ld h, a
+    ld a, [structAddress + 1]
+    ld l, a
+    ret
+
+; Load Register HL into Address
+ldHLToStructAddress::
+    ld a, h
+    ld [structAddress], a
+    ld a, l
+    ld [structAddress + 1], a
+    ret
+
+; Render sprite
 ; Render Metasprite
-RenderPlayer::
+; @param structAddress
+RenderSprite::
     ; Get the sprite address
-    ld a, [PlayerSprite_MetaSprite]
+    ld a, [hli]
     ld b, a
-    ld a, [PlayerSprite_MetaSprite + 1]
+    ld a, [hli]
     ld c, a
     or a, b
     jp z, .skip
+    ; Load HL back to the struct address
+    call ldHLToStructAddress
     ; Load the address into HL
     ld h, b
     ld l, c
-    ; Get the YPos of the sprite
-    ld a, [PlayerSprite_YPos]
-    ld b, a
-    ld a, [PlayerSprite_YPos + 1]
-    ld c, a
     ; Save hl
     push hl
+    ; Get the struct address
+    call ldStructAddressToHL
+    ; Get the YPos of the sprite
+    ld a, [hli]
+    ld b, a
+    ld a, [hli]
+    ld c, a
+    ; Load HL back to the struct address
+    call ldHLToStructAddress
     ; Get the YOffset and add to YPos
     ld h, b
     ld l, c
@@ -87,10 +196,12 @@ RenderPlayer::
     ld c, l
     ; Save bc
     push bc
+    ; Get the struct address
+    call ldStructAddressToHL
     ; Get the Xposition
-    ld a, [PlayerSprite_XPos]
+    ld a, [hli]
     ld d, a
-    ld a, [PlayerSprite_XPos + 1]
+    ld a, [hl]
     ld e, a
     ; Get the XOffset and add to XPos
     ld h, d

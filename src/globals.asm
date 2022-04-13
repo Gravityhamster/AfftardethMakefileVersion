@@ -1,11 +1,12 @@
 ; Include the struct lib
+INCLUDE "hardware.inc"
 INCLUDE "structs.inc"
 
 ; Define structs
     struct metaSpriteTemplate
+        bytes 2, MetaSprite
         bytes 2, YPos
         bytes 2, XPos
-        bytes 2, MetaSprite
     end_struct
 
 
@@ -21,6 +22,12 @@ PlayerMetasprite::
 
 ; Meta sprite 8x16:
 PlayerMetasprite::
+    db 0, 0, 0, 0
+    db 0, 8, 2, 0
+    db 128
+
+; Meta sprite 8x16:
+EnemyMetasprite::
     db 0, 0, 0, 0
     db 0, 8, 2, 0
     db 128
@@ -44,6 +51,10 @@ SECTION "Globals", WRAM0
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; Structure addres
+structAddress::
+    ds 2
+
 ; Target location of the view
 viewTargetX::
     ds 2
@@ -56,6 +67,9 @@ prevX::
 
 ; Struct references
     dstruct metaSpriteTemplate, PlayerSprite
+    dstruct metaSpriteTemplate, EnemySprite1
+    dstruct metaSpriteTemplate, EnemySprite2
+    dstruct metaSpriteTemplate, EnemySprite3
 
 ; Sprite global offset
 YOffset::

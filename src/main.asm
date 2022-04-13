@@ -27,6 +27,9 @@ SECTION "Game code", ROM0[$150]
 
 ; VBlank Interrupt
 vblankHandler:
+
+    ; Draw all structs
+    call RenderStructs
     
     ; Push sprites to OAM
     ld a, HIGH(wShadowOAM)
@@ -40,6 +43,7 @@ vblankHandler:
     ld a, [SCY]
     ld [rSCY], a
 
+    ; Load saved registers
     pop hl
     pop de
     pop bc
@@ -135,16 +139,13 @@ gameLoop:
     ; Reset shadow oam
     call ResetShadowOAM
 
-    ; Draw all structs
-    call RenderStructs
-
     ; Update the joypad
     call updateJoypadState
 
     ; Control the player
-    REPT 1
+    ;REPT 1
     call controlPlayer
-    ENDR
+    ;ENDR
 
     ; Move the screen
     call moveViewToFocusPoint
