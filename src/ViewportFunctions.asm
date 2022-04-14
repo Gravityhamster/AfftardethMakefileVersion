@@ -218,6 +218,14 @@ MoveViewUp::
 ; Get top and to the right
 getNextColumnRight::
 
+    ; Get the current tilemap and put in HL
+    ld a, [currentTileMap]
+    ld h, a
+    ld a, [currentTileMap + 1]
+    ld l, a
+    ld bc, $14
+    add hl, bc
+
     ; Load memX into BC
     ld a, [memX]
     ld b, a
@@ -245,7 +253,9 @@ getNextColumnRight::
     ; Setting DE
 
     ; Load the location into DE
-    ld de, HillsMapTilemap + $14
+    ; ld de, HillsMapTilemap + $14
+    ld d, h
+    ld e, l
 
     ; add bc to de
     ld h, b
@@ -297,6 +307,12 @@ getNextColumnRight::
 ; Get top and to the Left
 getNextColumnLeft::
 
+    ; Get the current tilemap and put in HL
+    ld a, [currentTileMap]
+    ld h, a
+    ld a, [currentTileMap + 1]
+    ld l, a
+
     ; Load memX into BC
     ld a, [memX]
     ld b, a
@@ -319,7 +335,9 @@ getNextColumnLeft::
     ; Setting DE
 
     ; Load the location into DE
-    ld de, HillsMapTilemap
+    ;ld de, HillsMapTilemap
+    ld d, h
+    ld e, l
 
     ; add bc to de
     ld h, b

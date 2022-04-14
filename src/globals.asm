@@ -51,6 +51,10 @@ SECTION "Globals", WRAM0
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; Current Tilemap
+currentTileMap::
+    ds 2
+
 ; Structure addres
 structAddress::
     ds 2
