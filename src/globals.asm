@@ -54,6 +54,8 @@ SECTION "Globals", WRAM0
 ; Current Tilemap
 currentTileMap::
     ds 2
+currentCollisionMap::
+    ds 2
 
 ; Structure addres
 structAddress::

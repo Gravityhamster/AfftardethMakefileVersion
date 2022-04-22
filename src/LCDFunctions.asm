@@ -72,6 +72,11 @@ copyHillMiddleMap::
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap::
+    ld de, HillsMapCollisionMap
+    ld a, d
+    ld [currentCollisionMap], a
+    ld a, e
+    ld [currentCollisionMap + 1], a
     ld de, HillsMapTilemap
     ld a, d
     ld [currentTileMap], a
