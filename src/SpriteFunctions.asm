@@ -332,7 +332,8 @@ controlPlayer::
     ld [yamnt], a
     ld a, c
     ld [yamnt + 1], a
-    ;ld hl, PlayerSprite
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
     call moveCollideThreePoint
 
 .skipRight:
@@ -383,7 +384,8 @@ controlPlayer::
     ld [yamnt], a
     ld a, c
     ld [yamnt + 1], a
-    ;ld hl, PlayerSprite
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
     call moveCollideThreePoint
 
 .skipLeft:
@@ -424,7 +426,8 @@ controlPlayer::
     ld [yamnt], a
     ld a, c
     ld [yamnt + 1], a
-    ;ld hl, PlayerSprite
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
     call moveCollideTwoPoint
 
 .skipDown:
@@ -465,7 +468,8 @@ controlPlayer::
     ld [yamnt], a
     ld a, c
     ld [yamnt + 1], a
-    ;ld hl, PlayerSprite
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
     call moveCollideTwoPoint
 
 .skipUp:
@@ -485,12 +489,28 @@ controlPlayer::
 ; @param yOffset2 - 16-bit floating point
 ; @param xOffset3 - 16-bit floating point
 ; @param yOffset3 - 16-bit floating point
+; @param structAddress
 moveCollideThreePoint:
 
+    ; Get the address of the current structure
+    ; Load the StructAddress into HL
+    ; StructAddress + 0 - MetaSprite Byte 1
+    ; StructAddress + 1 - MetaSprite Byte 2
+    ; StructAddress + 2 - YPos Byte 1
+    ; StructAddress + 3 - YPos Byte 2
+    ; StructAddress + 4 - XPos Byte 1
+    ; StructAddress + 5 - XPos Byte 2
+    call ldStructAddressToHL
+    ; When we first load the struct address it points to the first byte of the metasprite. Incrementing it *should* go through the different parts of the struct
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; Since StructAddress + 0 = MetaSprite Byte 1, this should be the first byte of the XPos because it is StructAddress (HL) + 4
+
     ; Check a collision point to the right
-    ld a, [PlayerSprite_XPos] ; XPos + 1
+    ld a, [hli] ; We increment to move to the next byte after reading the address value
     ld b, a
-    ld a, [PlayerSprite_XPos + 1] ; XPos + 1
+    ld a, [hl] ; We don't need to increment this time. 
     ld c, a
     ; Pixel offset for right collision point
     ; ld hl, (-5.0 >> 12) & $FFFF 
@@ -506,9 +526,15 @@ moveCollideThreePoint:
     call BitshiftBC
     call BitshiftBC
 
-    ld a, [PlayerSprite_YPos] ; YPos + 1
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
+
+    ld a, [hli] ; We need to increment in order to get to the next byte
     ld d, a
-    ld a, [PlayerSprite_YPos + 1] ; YPos + 1
+    ld a, [hl] 
     ld e, a
     ; Pixel offset for right collision point
     ; ld hl, (-1.0 >> 12) & $FFFF 
@@ -530,10 +556,18 @@ moveCollideThreePoint:
     cp a, 1
     jp z, .skip
 
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; XPos is at + 4, so we should be able to inc four times
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the XPos
+
     ; Check a collision point to the left
-    ld a, [PlayerSprite_XPos] ; XPos + 1
+    ld a, [hli] ; Inc to get second byte
     ld b, a
-    ld a, [PlayerSprite_XPos + 1] ; XPos + 1
+    ld a, [hl]
     ld c, a
     ; Pixel offset for left collision point
     ; ld hl, (-5.0 >> 12) & $FFFF 
@@ -549,9 +583,15 @@ moveCollideThreePoint:
     call BitshiftBC
     call BitshiftBC
 
-    ld a, [PlayerSprite_YPos] ; YPos + 1
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
+
+    ld a, [hli] ; Inc to next byte
     ld d, a
-    ld a, [PlayerSprite_YPos + 1] ; YPos + 1
+    ld a, [hl]
     ld e, a
     ; Pixel offset for right collision point
     ; ld hl, (-15.0 >> 12) & $FFFF 
@@ -572,11 +612,19 @@ moveCollideThreePoint:
     ; Check if a = 1
     cp a, 1
     jp z, .skip
+
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; XPos is at + 4, so we should be able to inc four times
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the XPos
     
     ; Check a collision point to the left
-    ld a, [PlayerSprite_XPos] ; XPos + 1
+    ld a, [hli]
     ld b, a
-    ld a, [PlayerSprite_XPos + 1] ; XPos + 1
+    ld a, [hl]
     ld c, a
     ; Pixel offset for left collision point
     ; ld hl, (-5.0 >> 12) & $FFFF 
@@ -617,16 +665,33 @@ moveCollideThreePoint:
     cp a, 1
     jp z, .skip
 
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; XPos is at + 4, so we should be able to inc 4 times
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the XPos
+
     ; Load params and move sprite
-    ld de, PlayerSprite_XPos
+    ld d, h
+    ld e, l
     ; ld bc, (-1.0 >> 12) & $FFFF
     ld a, [xamnt]
     ld b, a
     ld a, [xamnt + 1]
     ld c, a
     call AddToMemory16Bit
+
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
     
-    ld de, PlayerSprite_YPos
+    ; Load params and move sprite
+    ld d, h
+    ld e, l
     ; ld bc, (-1.0 >> 12) & $FFFF
     ld a, [yamnt]
     ld b, a
@@ -647,10 +712,25 @@ moveCollideThreePoint:
 ; @param yOffset2 - 16-bit floating point
 moveCollideTwoPoint:
 
+    ; Get the address of the current structure
+    ; Load the StructAddress into HL
+    ; StructAddress + 0 - MetaSprite Byte 1
+    ; StructAddress + 1 - MetaSprite Byte 2
+    ; StructAddress + 2 - YPos Byte 1
+    ; StructAddress + 3 - YPos Byte 2
+    ; StructAddress + 4 - XPos Byte 1
+    ; StructAddress + 5 - XPos Byte 2
+    call ldStructAddressToHL
+    ; When we first load the struct address it points to the first byte of the metasprite. Incrementing it *should* go through the different parts of the struct
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; Since StructAddress + 0 = MetaSprite Byte 1, this should be the first byte of the XPos because it is StructAddress (HL) + 4
+
     ; Check a collision point to the right
-    ld a, [PlayerSprite_XPos]
+    ld a, [hli] ; We increment to move to the next byte after reading the address value
     ld b, a
-    ld a, [PlayerSprite_XPos + 1]
+    ld a, [hl] ; We don't need to increment this time. 
     ld c, a
     ; Pixel offset for right collision point
     ; ld hl, (-5.0 >> 12) & $FFFF 
@@ -666,9 +746,15 @@ moveCollideTwoPoint:
     call BitshiftBC
     call BitshiftBC
 
-    ld a, [PlayerSprite_YPos]
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
+
+    ld a, [hli] ; We need to increment in order to get to the next byte
     ld d, a
-    ld a, [PlayerSprite_YPos + 1]
+    ld a, [hl] 
     ld e, a
     ; Pixel offset for right collision point
     ; ld hl, (-1.0 >> 12) & $FFFF 
@@ -690,10 +776,18 @@ moveCollideTwoPoint:
     cp a, 1
     jp z, .skip
 
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; XPos is at + 4, so we should be able to inc four times
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the XPos
+
     ; Check a collision point to the left
-    ld a, [PlayerSprite_XPos]
+    ld a, [hli] ; Inc to get second byte
     ld b, a
-    ld a, [PlayerSprite_XPos + 1]
+    ld a, [hl]
     ld c, a
     ; Pixel offset for left collision point
     ; ld hl, (-5.0 >> 12) & $FFFF 
@@ -709,9 +803,15 @@ moveCollideTwoPoint:
     call BitshiftBC
     call BitshiftBC
 
-    ld a, [PlayerSprite_YPos]
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
+
+    ld a, [hli] ; Inc to next byte
     ld d, a
-    ld a, [PlayerSprite_YPos + 1]
+    ld a, [hl]
     ld e, a
     ; Pixel offset for right collision point
     ; ld hl, (-15.0 >> 12) & $FFFF 
@@ -733,16 +833,33 @@ moveCollideTwoPoint:
     cp a, 1
     jp z, .skip
 
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; XPos is at + 4, so we should be able to inc 4 times
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the XPos
+
     ; Load params and move sprite
-    ld de, PlayerSprite_XPos
+    ld d, h
+    ld e, l
     ; ld bc, (-1.0 >> 12) & $FFFF
     ld a, [xamnt]
     ld b, a
     ld a, [xamnt + 1]
     ld c, a
     call AddToMemory16Bit
+
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
     
-    ld de, PlayerSprite_YPos
+    ; Load params and move sprite
+    ld d, h
+    ld e, l
     ; ld bc, (-1.0 >> 12) & $FFFF
     ld a, [yamnt]
     ld b, a
