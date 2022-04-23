@@ -108,127 +108,32 @@ HLTimes32::
     ; Return to code
     ret
 
+/*
 ; Bit shift HL right
 BitshiftHL::
 
-    ; Shift l
-    sra l
-    ; Get h
-    ld a, h
-    ; Okay, now we need to set the highest bit of l to the lowest of h
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    and a, %10000000
-    jp nz, .orr
-    ld a, %01111111
-    and a, l
-    jp .lode
-.orr:
-    or a, l
-.lode:
-    ld l, a
-    ; Shift h   
     sra h
-    ld a, %01111111
-    and a, h
-    ld h, a
+    rr l
     ret
 
 ; Bit shift BC right
 BitshiftBC::
 
-    ; Shift l
-    sra c
-    ; Get h
-    ld a, b
-    ; Okay, now we need to set the highest bit of l to the lowest of h
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    and a, %10000000
-    jp nz, .orr
-    ld a, %01111111
-    and a, c
-    jp .lode
-.orr:
-    or a, c
-.lode:
-    ld c, a
-    ; Shift h   
     sra b
-    ld a, %01111111
-    and a, b
-    ld b, a
+    rr c
     ret
 
 ; Bit shift DE right
 BitshiftDE::
 
-    ; Shift l
-    sra e
-    ; Get h
-    ld a, d
-    ; Okay, now we need to set the highest bit of l to the lowest of h
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    sla a
-    and a, %10000000
-    jp nz, .orr
-    ld a, %01111111
-    and a, e
-    jp .lode
-.orr:
-    or a, e
-.lode:
-    ld e, a
-    ; Shift h   
     sra d
-    ld a, %01111111
-    and a, d
-    ld d, a
+    rr e
     ret
 
 ; Bit shift DE left
 BitshiftLeftDE::
 
-    ; Shift d left
-    sla d
-    ; Set the highest bit of e to the lowest of d
-    ld a, e
-    ; Shift the highest bit in to the lowest in d
-    sra a
-    sra a
-    sra a
-    sra a
-    sra a
-    sra a
-    sra a
-    sra a
-    and a, %00000001
-    jp nz, .orr
-    ld a, %11111110
-    and a, d
-    jp .lode
-.orr:
-    or a, d
-.lode:
-    ld d, a
-    ; Shift h   
     sla e
-    ld a, %11111110
-    and a, e
-    ld e, a
+    rl d
     ret
+*/

@@ -292,11 +292,12 @@ AddToMemory16Bit::
     ret
 
 ; Control the player
-controlPlayer::
-    ; Check joypad right
+applyPlayerVelocity::
+
+    ; Check if velocity is > 0
     ld a, [joypadState]
     and a, %00010000
-    jp z, .skipRight
+    jp z, .skipRight    
 
     ; Move and collide
     ld bc, (4.0 >> 12) & $FFFF
@@ -600,10 +601,14 @@ moveCollideThreePoint:
     add hl, bc
     ld b, h 
     ld c, l
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -624,10 +629,14 @@ moveCollideThreePoint:
     add hl, de
     ld d, h 
     ld e, l
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
     
     call CheckCollision
 
@@ -657,10 +666,14 @@ moveCollideThreePoint:
     add hl, bc
     ld b, h 
     ld c, l
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -681,10 +694,14 @@ moveCollideThreePoint:
     add hl, de
     ld d, h 
     ld e, l
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
     
     call CheckCollision
 
@@ -714,10 +731,14 @@ moveCollideThreePoint:
     add hl, bc
     ld b, h 
     ld c, l
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
 
     ; Load hl
     ld a, [PlayerSprite_YPos] ; YPos + 1
@@ -733,10 +754,14 @@ moveCollideThreePoint:
     add hl, de
     ld d, h 
     ld e, l
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
     
     call CheckCollision
 
@@ -820,10 +845,14 @@ moveCollideTwoPoint:
     add hl, bc
     ld b, h 
     ld c, l
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -844,10 +873,14 @@ moveCollideTwoPoint:
     add hl, de
     ld d, h 
     ld e, l
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
     
     call CheckCollision
 
@@ -877,10 +910,14 @@ moveCollideTwoPoint:
     add hl, bc
     ld b, h 
     ld c, l
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -901,10 +938,14 @@ moveCollideTwoPoint:
     add hl, de
     ld d, h 
     ld e, l
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
     
     call CheckCollision
 
@@ -956,10 +997,16 @@ getPlayerFocusPointY:
     ld h, a
     ld a, [PlayerSprite_YPos + 1]
     ld l, a
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
     ; If h is 0F and l is FX, then set 0
     ld a, l
     cp a, $F0
@@ -983,10 +1030,14 @@ getPlayerFocusPointY:
     ld l, a
     ld bc, (-92.0 >> 12) & $FFFF
     add hl, bc
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
     ld a, l
     jp .skip
 .setZero:
@@ -1003,10 +1054,14 @@ getPlayerFocusPointX:
     ld h, a
     ld a, [PlayerSprite_XPos + 1]
     ld l, a
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
     ; If h is 0F and l is FX, then set 0
     ld a, l
     cp a, $F0
@@ -1030,10 +1085,14 @@ getPlayerFocusPointX:
     ld l, a
     ld bc, (-80.0 >> 12) & $FFFF
     add hl, bc
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
     jp .skip
 .setZero:
     ld a, 0

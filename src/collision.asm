@@ -12,17 +12,23 @@ CheckCollision::
     ; Bit shift bc to right 3 times
     ld h, b
     ld l, c
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
     ld b, h
     ld c, l
     ; Bit shift de to right 3 times
     ld h, d
     ld l, e
-    call BitshiftHL
-    call BitshiftHL
-    call BitshiftHL
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
     ld d, h
     ld e, l
     ; Check if collision
@@ -42,10 +48,13 @@ CheckCollision::
     ld b, a
     ld a, [mapX + 1]
     ld c, a
-    call BitshiftBC
+    sra b
+    rr c
 .loop:
-    call BitshiftLeftDE
-    call BitshiftBC
+    sla e
+    rl d
+    sra b
+    rr c
     ; If BC is not zero, loop
     ld a, b
     or c
