@@ -27,6 +27,9 @@ SECTION "Game code", ROM0[$150]
 
 ; VBlank Interrupt
 vblankHandler:
+
+    ;; Draw all structs
+    ;call RenderStructs
     
     ; Push sprites to OAM
     ld a, HIGH(wShadowOAM)
@@ -40,6 +43,7 @@ vblankHandler:
     ld a, [SCY]
     ld [rSCY], a
 
+    ; Load saved registers
     pop hl
     pop de
     pop bc
@@ -50,8 +54,10 @@ vblankHandler:
 ; Main - This is where the program starts
 ; ---------------------------------------
 main:
+
     ; Set WRAM
     ld a, $00
+    ld [prevX], a
     ld [YOffset], a
     ld [YOffset+1], a
     ld [XOffset], a
@@ -70,6 +76,10 @@ main:
     ld [joypadPressed], a
     ld [SCX], a
     ld [SCY], a
+    ld a, $00
+    ld [viewTargetX], a
+    ld [viewTargetX+1], a
+    ld [viewTargetY], a
 
     ; Initialize all sprite structs
     call InitStructs
@@ -125,33 +135,22 @@ main:
 ; ---------------------------------------------
 ; gameLoop - This is where the gameLoop happens
 ; ---------------------------------------------
-gameLoop:    
+gameLoop:   
     ; Reset shadow oam
     call ResetShadowOAM
-
-    ; Draw all structs
-    call RenderStructs
-
-    ; Move the sprite
-    /*ld a, [PlayerSprite_YPos]
-    ld h, a 
-    ld a, [PlayerSprite_YPos + 1]
-    ld l, a 
-    ld bc, (1.0 >> 12) & $FFFF
-    add hl, bc
-    ld a, h
-    ld [PlayerSprite_YPos], a
-    ld a, l
-    ld [PlayerSprite_YPos+1], a*/
 
     ; Update the joypad
     call updateJoypadState
 
+    ; Control the player
+    call applyPlayerVelocity
+
     ; Move the screen
-    REPT 4
-    call moveViewPortx1y1
-    ENDR
-    
+    call moveViewToFocusPoint
+
+    ; Draw all structs
+    call RenderStructs
+
     ; Loop
     halt
     jp gameLoop

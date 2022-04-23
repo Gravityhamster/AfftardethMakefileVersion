@@ -1,11 +1,14 @@
 ; Include the struct lib
+INCLUDE "hardware.inc"
 INCLUDE "structs.inc"
 
 ; Define structs
     struct metaSpriteTemplate
-        bytes 2, YPos
-        bytes 2, XPos
-        bytes 2, MetaSprite
+        bytes 2, MetaSprite ; 0, 1
+        bytes 2, YPos       ; 2, 3
+        bytes 2, XPos       ; 4, 5
+        bytes 2, YVel       ; 6, 7
+        bytes 2, XVel       ; 8, 9
     end_struct
 
 
@@ -21,8 +24,14 @@ PlayerMetasprite::
 
 ; Meta sprite 8x16:
 PlayerMetasprite::
-    db 16, 8, 0, 0
-    db 16, 16, 2, 0
+    db 0, 0, 0, 0
+    db 0, 8, 2, 0
+    db 128
+
+; Meta sprite 8x16:
+EnemyMetasprite::
+    db 0, 0, 0, 0
+    db 0, 8, 2, 0
     db 128
 
 ; Tile sets
@@ -44,8 +53,49 @@ SECTION "Globals", WRAM0
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; Move collide variables
+xamnt::
+    ds 2
+yamnt::
+    ds 2
+xOffset1::
+    ds 2
+yOffset1::
+    ds 2
+xOffset2::
+    ds 2
+yOffset2::
+    ds 2
+xOffset3::
+    ds 2
+yOffset3::
+    ds 2
+
+; Current Tilemap
+currentTileMap::
+    ds 2
+currentCollisionMap::
+    ds 2
+
+; Structure addres
+structAddress::
+    ds 2
+
+; Target location of the view
+viewTargetX::
+    ds 2
+viewTargetY::
+    ds 1
+
+; Last view position
+prevX::
+    ds 1
+
 ; Struct references
     dstruct metaSpriteTemplate, PlayerSprite
+    dstruct metaSpriteTemplate, EnemySprite1
+    dstruct metaSpriteTemplate, EnemySprite2
+    dstruct metaSpriteTemplate, EnemySprite3
 
 ; Sprite global offset
 YOffset::

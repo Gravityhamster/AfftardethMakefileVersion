@@ -72,7 +72,16 @@ copyHillMiddleMap::
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap::
+    ld de, HillsMapCollisionMap
+    ld a, d
+    ld [currentCollisionMap], a
+    ld a, e
+    ld [currentCollisionMap + 1], a
     ld de, HillsMapTilemap
+    ld a, d
+    ld [currentTileMap], a
+    ld a, e
+    ld [currentTileMap + 1], a
     ld hl, $9800
     ; Define map dims
     ld a, $00
@@ -87,7 +96,7 @@ copyNewHillExtMap::
     jp pLoadExtendedMap
 
 ; Loads the copied ext tilemap into VRAM - Loads the map into the VRAM at $9800
-; NEVER CALL THIS FUNCTION
+; NEVER CALL THIS FUNCTION DIRECTLY
 pLoadExtendedMap::
     
     ; Set drawOffset

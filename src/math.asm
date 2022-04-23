@@ -107,3 +107,33 @@ HLTimes32::
     ;sla b
     ; Return to code
     ret
+
+/*
+; Bit shift HL right
+BitshiftHL::
+
+    sra h
+    rr l
+    ret
+
+; Bit shift BC right
+BitshiftBC::
+
+    sra b
+    rr c
+    ret
+
+; Bit shift DE right
+BitshiftDE::
+
+    sra d
+    rr e
+    ret
+
+; Bit shift DE left
+BitshiftLeftDE::
+
+    sla e
+    rl d
+    ret
+*/

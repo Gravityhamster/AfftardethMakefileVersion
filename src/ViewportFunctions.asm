@@ -53,17 +53,21 @@ MoveViewRight::
     ; Only load a column and increment memX if the viewport is divisible by 8
     jp nz, .skip1 ; Skip the column drawing code if not zero
     
-    ; Check right joypad
-    ld a, [joypadState]
-    and a, %00010000
+;    ; Check right joypad
+;    ld a, [joypadState]
+;    and a, %00010000
     ; Draw column if joypadR
-    call nz, getNextColumnRight
-    
+;    call nz, getNextColumnRight
+    call getNextColumnRight
+
+    ld a, [SCX]
+    ld [prevX], a
+
 .skip1:
 
-    ld a, [joypadState]
-    and a, %00010000
-    jp z, .rOff
+;    ld a, [joypadState]
+;    and a, %00010000
+;    jp z, .rOff
     ld a, [SCX]
     add a, 1
     ld [SCX], a
@@ -91,7 +95,7 @@ MoveViewRight::
     ld a, l
     ld [XOffset+1], a
 
-.rOff
+;.rOff
 .SkipAllRight:
     ret
 
@@ -109,9 +113,9 @@ MoveViewLeft::
     jp z, .SkipAllLeft
 
     ; Move the viewport left
-    ld a, [joypadState]
-    and a, %00100000
-    jp z, .lOff
+;    ld a, [joypadState]
+;    and a, %00100000
+;    jp z, .lOff
     ld a, [SCX]
     sub a, 1
     ld [SCX], a
@@ -139,7 +143,7 @@ MoveViewLeft::
     ld a, l
     ld [XOffset+1], a
 
-.lOff
+;.lOff
 
     ; Load SCX into a
     ld a, [SCX] ; [SCX] is Viewport X
@@ -148,10 +152,11 @@ MoveViewLeft::
     jp nz, .skip2 ; Skip the column drawing code if not zero
 
     ; Check left joypad
-    ld a, [joypadState]
-    and a, %00100000
+;    ld a, [joypadState]
+;    and a, %00100000
     ; Draw column if joypadL
-    call nz, getNextColumnLeft
+    ;call nz, getNextColumnLeft
+    call getNextColumnLeft
 
 .skip2:
 
@@ -160,9 +165,9 @@ MoveViewLeft::
 
 ; Move the view down
 MoveViewDown::
-    ld a, [joypadState]
-    and a, %10000000
-    jp z, .dskip  ; Input
+;    ld a, [joypadState]
+;    and a, %10000000
+;    jp z, .dskip  ; Input
     ld a, [SCY]
     cp a, $70 ; clamp
     jp nc, .dskip  ; clamp
@@ -186,9 +191,9 @@ MoveViewDown::
 
 ; Move the view up
 MoveViewUp::
-    ld a, [joypadState]
-    and a, %01000000
-    jp z, .uskip  ; Input
+;    ld a, [joypadState]
+;    and a, %01000000
+;    jp z, .uskip  ; Input
     ld a, [SCY]
     cp a, $01 ; clamp
     jp c, .uskip ; clamp
@@ -212,6 +217,14 @@ MoveViewUp::
 
 ; Get top and to the right
 getNextColumnRight::
+
+    ; Get the current tilemap and put in HL
+    ld a, [currentTileMap]
+    ld h, a
+    ld a, [currentTileMap + 1]
+    ld l, a
+    ld bc, $14
+    add hl, bc
 
     ; Load memX into BC
     ld a, [memX]
@@ -240,7 +253,9 @@ getNextColumnRight::
     ; Setting DE
 
     ; Load the location into DE
-    ld de, HillsMapTilemap + $14
+    ; ld de, HillsMapTilemap + $14
+    ld d, h
+    ld e, l
 
     ; add bc to de
     ld h, b
@@ -292,6 +307,12 @@ getNextColumnRight::
 ; Get top and to the Left
 getNextColumnLeft::
 
+    ; Get the current tilemap and put in HL
+    ld a, [currentTileMap]
+    ld h, a
+    ld a, [currentTileMap + 1]
+    ld l, a
+
     ; Load memX into BC
     ld a, [memX]
     ld b, a
@@ -314,7 +335,9 @@ getNextColumnLeft::
     ; Setting DE
 
     ; Load the location into DE
-    ld de, HillsMapTilemap
+    ;ld de, HillsMapTilemap
+    ld d, h
+    ld e, l
 
     ; add bc to de
     ld h, b
@@ -445,4 +468,73 @@ setTileForColumn::
     ld h, a
 
     ; Return to code
+    ret
+    
+; Move to the 
+moveViewToFocusPoint::
+    ; SCX
+    ; SCY
+
+    ; Check if the pixX is greater than the focus point
+    ld a, [pixX]
+    ld b, a
+    ld a, [pixX+1]
+    ld c, a
+    ld a, [viewTargetX]
+    ld h, a
+    ld a, [viewTargetX+1]
+    ld l, a
+
+    ; Test
+    ; bc = current
+    ; hl = target
+    ; target - current = ?
+    ; If the result is 0, skipall
+    ; If the result is Carry, then target is left of current and we need to move left
+    ; If the result is Not Carry, then the target is right of current and we need to move right
+    
+    ; First we need to test the higher bits
+    ; h - b = ?
+    ld a, h
+    cp a, b
+    ; If the result is zero, then they are equal, but we need to check the lower bits
+    jp z, .checkLowerBits
+    ; If the result is Carry, then target is left of the current
+    jp c, .moveLeft
+.moveRight
+    call MoveViewRight
+    jp .endH
+.moveLeft:
+    call MoveViewLeft
+    jp .endH
+.checkLowerBits:
+    ; Now we need to test the lower bits
+    ; l - c = ?
+    ld a, l
+    cp a, c
+    ; If the result is zero, they are equal and we are done
+    jp z, .endH
+    ; If the result is Carry, then the target is left of the current
+    jp c, .moveLeft
+    ; Else, move right
+    jp .moveRight
+.endH:
+
+    ; Check if the SCX is greater than the focus point
+    ld a, [SCY]
+    ld b, a
+    ld a, [viewTargetY]
+    cp a, b
+    ; If this is zero, we don't need to do anything
+    jp z, .endV
+    jp c, .goUp ; If carry, move up
+; Go down
+    call MoveViewDown
+    jp .endV
+.goUp:
+; Go up
+    call MoveViewUp
+.endV:
+; Do not go
+
     ret
