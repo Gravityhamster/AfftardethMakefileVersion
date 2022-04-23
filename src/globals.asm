@@ -7,6 +7,8 @@ INCLUDE "structs.inc"
         bytes 2, MetaSprite ; 0, 1
         bytes 2, YPos       ; 2, 3
         bytes 2, XPos       ; 4, 5
+        bytes 2, YVel       ; 6, 7
+        bytes 2, XVel       ; 8, 9
     end_struct
 
 

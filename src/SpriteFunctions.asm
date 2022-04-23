@@ -78,6 +78,13 @@ InitSpriteStruct::
     ld [hli], a
     ld a, c
     ld [hli], a
+    ; Load YVel data
+    ld a, 0
+    ld [hli], a
+    ld [hli], a
+    ; Load XVel data
+    ld [hli], a
+    ld [hli], a
 
     ret
 
@@ -480,6 +487,78 @@ controlPlayer::
 
     ret
     
+; Set velocities based on certain properties
+setPlayerVelocities::
+
+    ; Check joypad right
+    ld a, [joypadState]
+    and a, %00010000
+    jp z, .skipRight
+
+    ; Set velocity to positive one
+    ld bc, (1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_XVel], a
+    ld a, c
+    ld [PlayerSprite_XVel + 1], a
+
+.skipRight:
+
+    ; Check joypad left
+    ld a, [joypadState]
+    and a, %00100000
+    jp z, .skipLeft
+
+    ; Set velocity to negative one
+    ld bc, (-1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_XVel], a
+    ld a, c
+    ld [PlayerSprite_XVel + 1], a
+
+.skipLeft:
+
+    ; Check joypad down
+    ld a, [joypadState]
+    and a, %10000000
+    jp z, .skipDown
+
+    ; Set velocity to positive one
+    ld bc, (1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_YVel], a
+    ld a, c
+    ld [PlayerSprite_YVel + 1], a
+
+.skipDown:
+
+    ; Check joypad up
+    ld a, [joypadState]
+    and a, %01000000
+    jp z, .skipUp
+
+    ; Set velocity to negative one
+    ld bc, (-1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_YVel], a
+    ld a, c
+    ld [PlayerSprite_YVel + 1], a
+
+.skipUp:
+    
+    ;; Set the focal point of the camera
+    ;call getPlayerFocusPointY
+    ;call getPlayerFocusPointX
+
+    ; Reset velocities
+    ld a, 0
+    ld [PlayerSprite_XVel], a
+    ld [PlayerSprite_XVel + 1], a
+    ld [PlayerSprite_YVel], a
+    ld [PlayerSprite_YVel + 1], a
+
+    ret
+
 ; Check collision and move left
 ; @param xamnt -    16-bit floating point
 ; @param yamnt -    16-bit floating point
