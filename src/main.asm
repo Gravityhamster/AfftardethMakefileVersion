@@ -148,38 +148,6 @@ gameLoop:
     ; Move the screen
     call moveViewToFocusPoint
 
-    ; Test collision check
-    ld a, [PlayerSprite_XPos]
-    ld b, a
-    ld a, [PlayerSprite_XPos + 1]
-    ld c, a
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-    call BitshiftBC
-
-    ld a, [PlayerSprite_YPos]
-    ld d, a
-    ld a, [PlayerSprite_YPos + 1]
-    ld e, a
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    call BitshiftDE
-    
-    call CheckCollision
-
-    ; Checl collision result
-    dec a
-    jp z, .z
-.n:
-    ld a, %00000000
-    jp .dr
-.z:
-    ld a, %11100100
-.dr:
-    ld [rBGP], a
-
     ; Draw all structs
     call RenderStructs
 

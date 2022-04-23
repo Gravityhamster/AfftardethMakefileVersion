@@ -290,10 +290,50 @@ controlPlayer::
     ld a, [joypadState]
     and a, %00010000
     jp z, .skipRight
-    ; Load params and move sprite
-    ld de, PlayerSprite_XPos
+
+    ; Move and collide
+    ld bc, (4.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset1], a
+    ld a, c
+    ld [xOffset1 + 1], a
+    ld bc, (4.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset2], a
+    ld a, c
+    ld [xOffset2 + 1], a
+    ld bc, (4.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset3], a
+    ld a, c
+    ld [xOffset3 + 1], a
+    ld bc, (-1.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset1], a
+    ld a, c
+    ld [yOffset1 + 1], a
+    ld bc, (-7.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset2], a
+    ld a, c
+    ld [yOffset2 + 1], a
+    ld bc, (-15.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset3], a
+    ld a, c
+    ld [yOffset3 + 1], a
     ld bc, (1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [xamnt], a
+    ld a, c
+    ld [xamnt + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [yamnt], a
+    ld a, c
+    ld [yamnt + 1], a
+    ;ld hl, PlayerSprite
+    call moveCollideThreePoint
 
 .skipRight:
 
@@ -301,21 +341,91 @@ controlPlayer::
     ld a, [joypadState]
     and a, %00100000
     jp z, .skipLeft
-    ; Load params and move sprite
-    ld de, PlayerSprite_XPos
+
+    ; Move and collide
+    ld bc, (-5.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset1], a
+    ld a, c
+    ld [xOffset1 + 1], a
+    ld bc, (-5.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset2], a
+    ld a, c
+    ld [xOffset2 + 1], a
+    ld bc, (-5.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset3], a
+    ld a, c
+    ld [xOffset3 + 1], a
     ld bc, (-1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [yOffset1], a
+    ld a, c
+    ld [yOffset1 + 1], a
+    ld bc, (-7.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset2], a
+    ld a, c
+    ld [yOffset2 + 1], a
+    ld bc, (-15.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset3], a
+    ld a, c
+    ld [yOffset3 + 1], a
+    ld bc, (-1.0 >> 12) & $FFFF
+    ld a, b
+    ld [xamnt], a
+    ld a, c
+    ld [xamnt + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [yamnt], a
+    ld a, c
+    ld [yamnt + 1], a
+    ;ld hl, PlayerSprite
+    call moveCollideThreePoint
 
 .skipLeft:
 
     ; Check joypad down
     ld a, [joypadState]
     and a, %10000000
-    jp z, .skipDown
-    ; Load params and move sprite
-    ld de, PlayerSprite_YPos
+    jp z, .skipDown    
+
+    ; Move and collide
+    ld bc, (-4.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset1], a
+    ld a, c
+    ld [xOffset1 + 1], a
+    ld bc, (3.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset2], a
+    ld a, c
+    ld [xOffset2 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset1], a
+    ld a, c
+    ld [yOffset1 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset2], a
+    ld a, c
+    ld [yOffset2 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [xamnt], a
+    ld a, c
+    ld [xamnt + 1], a
     ld bc, (1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [yamnt], a
+    ld a, c
+    ld [yamnt + 1], a
+    ;ld hl, PlayerSprite
+    call moveCollideTwoPoint
 
 .skipDown:
 
@@ -323,10 +433,40 @@ controlPlayer::
     ld a, [joypadState]
     and a, %01000000
     jp z, .skipUp
-    ; Load params and move sprite
-    ld de, PlayerSprite_YPos
+
+    ; Move and collide
+    ld bc, (-4.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset1], a
+    ld a, c
+    ld [xOffset1 + 1], a
+    ld bc, (3.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset2], a
+    ld a, c
+    ld [xOffset2 + 1], a
+    ld bc, (-15.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset1], a
+    ld a, c
+    ld [yOffset1 + 1], a
+    ld bc, (-15.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset2], a
+    ld a, c
+    ld [yOffset2 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [xamnt], a
+    ld a, c
+    ld [xamnt + 1], a
     ld bc, (-1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [yamnt], a
+    ld a, c
+    ld [yamnt + 1], a
+    ;ld hl, PlayerSprite
+    call moveCollideTwoPoint
 
 .skipUp:
     
@@ -334,6 +474,283 @@ controlPlayer::
     call getPlayerFocusPointY
     call getPlayerFocusPointX
 
+    ret
+    
+; Check collision and move left
+; @param xamnt -    16-bit floating point
+; @param yamnt -    16-bit floating point
+; @param xOffset1 - 16-bit floating point
+; @param yOffset1 - 16-bit floating point
+; @param xOffset2 - 16-bit floating point
+; @param yOffset2 - 16-bit floating point
+; @param xOffset3 - 16-bit floating point
+; @param yOffset3 - 16-bit floating point
+moveCollideThreePoint:
+
+    ; Check a collision point to the right
+    ld a, [PlayerSprite_XPos] ; XPos + 1
+    ld b, a
+    ld a, [PlayerSprite_XPos + 1] ; XPos + 1
+    ld c, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset1]
+    ld h, a
+    ld a, [xOffset1 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+
+    ld a, [PlayerSprite_YPos] ; YPos + 1
+    ld d, a
+    ld a, [PlayerSprite_YPos + 1] ; YPos + 1
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-1.0 >> 12) & $FFFF 
+    ld a, [yOffset1]
+    ld h, a
+    ld a, [yOffset1 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+
+    ; Check a collision point to the left
+    ld a, [PlayerSprite_XPos] ; XPos + 1
+    ld b, a
+    ld a, [PlayerSprite_XPos + 1] ; XPos + 1
+    ld c, a
+    ; Pixel offset for left collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset2]
+    ld h, a
+    ld a, [xOffset2 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+
+    ld a, [PlayerSprite_YPos] ; YPos + 1
+    ld d, a
+    ld a, [PlayerSprite_YPos + 1] ; YPos + 1
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-15.0 >> 12) & $FFFF 
+    ld a, [yOffset2]
+    ld h, a
+    ld a, [yOffset2 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+    
+    ; Check a collision point to the left
+    ld a, [PlayerSprite_XPos] ; XPos + 1
+    ld b, a
+    ld a, [PlayerSprite_XPos + 1] ; XPos + 1
+    ld c, a
+    ; Pixel offset for left collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset3]
+    ld h, a
+    ld a, [xOffset3 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+
+    ; Load hl
+    ld a, [PlayerSprite_YPos] ; YPos + 1
+    ld d, a
+    ld a, [PlayerSprite_YPos + 1] ; YPos + 1
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-7.0 >> 12) & $FFFF 
+    ld a, [yOffset3]
+    ld h, a
+    ld a, [yOffset3 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+
+    ; Load params and move sprite
+    ld de, PlayerSprite_XPos
+    ; ld bc, (-1.0 >> 12) & $FFFF
+    ld a, [xamnt]
+    ld b, a
+    ld a, [xamnt + 1]
+    ld c, a
+    call AddToMemory16Bit
+    
+    ld de, PlayerSprite_YPos
+    ; ld bc, (-1.0 >> 12) & $FFFF
+    ld a, [yamnt]
+    ld b, a
+    ld a, [yamnt + 1]
+    ld c, a
+    call AddToMemory16Bit
+
+.skip:
+    ret
+
+
+; Check collision and move left
+; @param xamnt -    16-bit floating point
+; @param yamnt -    16-bit floating point
+; @param xOffset1 - 16-bit floating point
+; @param yOffset1 - 16-bit floating point
+; @param xOffset2 - 16-bit floating point
+; @param yOffset2 - 16-bit floating point
+moveCollideTwoPoint:
+
+    ; Check a collision point to the right
+    ld a, [PlayerSprite_XPos]
+    ld b, a
+    ld a, [PlayerSprite_XPos + 1]
+    ld c, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset1]
+    ld h, a
+    ld a, [xOffset1 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+
+    ld a, [PlayerSprite_YPos]
+    ld d, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-1.0 >> 12) & $FFFF 
+    ld a, [yOffset1]
+    ld h, a
+    ld a, [yOffset1 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+
+    ; Check a collision point to the left
+    ld a, [PlayerSprite_XPos]
+    ld b, a
+    ld a, [PlayerSprite_XPos + 1]
+    ld c, a
+    ; Pixel offset for left collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset2]
+    ld h, a
+    ld a, [xOffset2 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+    call BitshiftBC
+
+    ld a, [PlayerSprite_YPos]
+    ld d, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-15.0 >> 12) & $FFFF 
+    ld a, [yOffset2]
+    ld h, a
+    ld a, [yOffset2 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    call BitshiftDE
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+
+    ; Load params and move sprite
+    ld de, PlayerSprite_XPos
+    ; ld bc, (-1.0 >> 12) & $FFFF
+    ld a, [xamnt]
+    ld b, a
+    ld a, [xamnt + 1]
+    ld c, a
+    call AddToMemory16Bit
+    
+    ld de, PlayerSprite_YPos
+    ; ld bc, (-1.0 >> 12) & $FFFF
+    ld a, [yamnt]
+    ld b, a
+    ld a, [yamnt + 1]
+    ld c, a
+    call AddToMemory16Bit
+
+.skip:
     ret
 
 ; Focus on the player

@@ -51,6 +51,24 @@ SECTION "Globals", WRAM0
 ; Work variables
 ; -------------------------------------------------------------------------------
 
+; Move collide variables
+xamnt::
+    ds 2
+yamnt::
+    ds 2
+xOffset1::
+    ds 2
+yOffset1::
+    ds 2
+xOffset2::
+    ds 2
+yOffset2::
+    ds 2
+xOffset3::
+    ds 2
+yOffset3::
+    ds 2
+
 ; Current Tilemap
 currentTileMap::
     ds 2
