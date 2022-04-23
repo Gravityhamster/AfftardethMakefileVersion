@@ -10,27 +10,27 @@ SECTION "Collision Functions", ROM0
 ; @returns a - Tile collision type ID
 CheckCollision::
     ; Bit shift bc to right 3 times
-    ld h, b
-    ld l, c
-    sra h
-    rr l
-    sra h
-    rr l
-    sra h
-    rr l
-    ld b, h
-    ld c, l
+    ;ld h, b
+    ;ld l, c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ;ld b, h
+    ;ld c, l
     ; Bit shift de to right 3 times
-    ld h, d
-    ld l, e
-    sra h
-    rr l
-    sra h
-    rr l
-    sra h
-    rr l
-    ld d, h
-    ld e, l
+    ;ld h, d
+    ;ld l, e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    ;ld d, h
+    ;ld e, l
     ; Check if collision
     ; Get the location in memory of the collision map tile
     ld h, 0

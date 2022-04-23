@@ -295,9 +295,27 @@ AddToMemory16Bit::
 applyPlayerVelocity::
 
     ; Check if velocity is > 0
-    ld a, [joypadState]
-    and a, %00010000
-    jp z, .skipRight    
+
+    ;;; From Eievui:
+    ;;; ; position in hl
+    ;;; bit 7, h ; bit 15 of hl
+    ;;; jr nz, .lessThan0
+    ;;; ld a, h
+    ;;; or a, l
+    ;;; jr nz, .greaterThan0    
+
+    ; Check if the velocity is greater than 0
+    ld a, [PlayerSprite_XVel]
+    ld h, a
+    bit 7, h
+    jp nz, .skipRight
+    ; If the negative bit is not set, then check if the value is not zero
+    ld a, [PlayerSprite_XVel + 1] ; Also, get the rest of the velocity
+    ld l, a
+    ; Check if zero
+    ld a, h
+    or a, l
+    jp z, .skipRight
 
     ; Move and collide
     ld bc, (4.0 >> 12) & $FFFF
@@ -346,9 +364,10 @@ applyPlayerVelocity::
 
 .skipRight:
 
-    ; Check joypad left
-    ld a, [joypadState]
-    and a, %00100000
+    ; Check if the velocity is less than 0
+    ld a, [PlayerSprite_XVel]
+    ld h, a
+    bit 7, h
     jp z, .skipLeft
 
     ; Move and collide
@@ -398,10 +417,18 @@ applyPlayerVelocity::
 
 .skipLeft:
 
-    ; Check joypad down
-    ld a, [joypadState]
-    and a, %10000000
-    jp z, .skipDown    
+    ; Check if the velocity is greater than 0
+    ld a, [PlayerSprite_YVel]
+    ld h, a
+    bit 7, h
+    jp nz, .skipDown
+    ; If the negative bit is not set, then check if the value is not zero
+    ld a, [PlayerSprite_YVel + 1] ; Also, get the rest of the velocity
+    ld l, a
+    ; Check if zero
+    ld a, h
+    or a, l
+    jp z, .skipDown
 
     ; Move and collide
     ld bc, (-4.0 >> 12) & $FFFF
@@ -440,9 +467,10 @@ applyPlayerVelocity::
 
 .skipDown:
 
-    ; Check joypad up
-    ld a, [joypadState]
-    and a, %01000000
+    ; Check if the velocity is less than 0
+    ld a, [PlayerSprite_YVel]
+    ld h, a
+    bit 7, h
     jp z, .skipUp
 
     ; Move and collide
@@ -520,9 +548,9 @@ setPlayerVelocities::
 .skipLeft:
 
     ; Check joypad down
-    ld a, [joypadState]
-    and a, %10000000
-    jp z, .skipDown
+    ;ld a, [joypadState]
+    ;and a, %10000000
+    ;jp z, .skipDown
 
     ; Set velocity to positive one
     ld bc, (1.0 >> 12) & $FFFF
@@ -550,6 +578,8 @@ setPlayerVelocities::
     ;; Set the focal point of the camera
     ;call getPlayerFocusPointY
     ;call getPlayerFocusPointX
+
+    call applyPlayerVelocity
 
     ; Reset velocities
     ld a, 0
@@ -997,8 +1027,6 @@ getPlayerFocusPointY:
     ld h, a
     ld a, [PlayerSprite_YPos + 1]
     ld l, a
-    sra h
-    rr l
     sra h
     rr l
     sra h

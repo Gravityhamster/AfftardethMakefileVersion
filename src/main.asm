@@ -143,7 +143,7 @@ gameLoop:
     call updateJoypadState
 
     ; Control the player
-    call applyPlayerVelocity
+    call setPlayerVelocities
 
     ; Move the screen
     call moveViewToFocusPoint
