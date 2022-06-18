@@ -25,24 +25,28 @@ InitStructs::
     ld bc, (0.0 >> 12) & $FFFF
     ld de, (0.0 >> 12) & $FFFF
     call InitSpriteStruct
+
     ld hl, EnemySprite1
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (10.0 >> 12) & $FFFF
     ld de, (10.0 >> 12) & $FFFF
     call InitSpriteStruct
+
     ld hl, EnemySprite2
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (20.0 >> 12) & $FFFF
     ld de, (20.0 >> 12) & $FFFF
     call InitSpriteStruct
+
     ld hl, EnemySprite3
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (30.0 >> 12) & $FFFF
     ld de, (30.0 >> 12) & $FFFF
     call InitSpriteStruct
+    
     ret
 
 ; Init player struct
