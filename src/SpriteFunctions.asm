@@ -311,11 +311,26 @@ applyPlayerVelocity::
     jp nz, .skipRight
     ; If the negative bit is not set, then check if the value is not zero
     ld a, [PlayerSprite_XVel + 1] ; Also, get the rest of the velocity
-    ld l, a
+    ld l, a    
     ; Check if zero
     ld a, h
     or a, l
     jp z, .skipRight
+
+    ; If not zero, then ceiling
+    ld a, l
+    and a, %00001111
+    jp z, .contRight
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ; Now clear the decimals
+    ld a, l
+    and a, %11110000
+    ld l, a
+.contRight:
+
+    ; Save hl
+    push hl
 
     ; Move and collide
     ld bc, (4.0 >> 12) & $FFFF
@@ -360,7 +375,17 @@ applyPlayerVelocity::
     ld [yamnt + 1], a
     ld hl, PlayerSprite
     call ldHLToStructAddress
+    ; Repeat until velocity is zero in this direction
+.loopRight:
     call moveCollideThreePoint
+    pop hl
+    ld bc, (-1.0 >> 12) & $FFFF
+    add hl, bc
+    push hl
+    ld a, h
+    or a, l
+    jp nz, .loopRight
+    pop hl
 
 .skipRight:
 
@@ -369,6 +394,18 @@ applyPlayerVelocity::
     ld h, a
     bit 7, h
     jp z, .skipLeft
+
+    ; Get the rest of the velocity
+    ld a, [PlayerSprite_XVel + 1]
+    ld l, a
+
+    ; Clear the decimals
+    ld a, l
+    and a, %11110000
+    ld l, a
+
+    ; Save hl
+    push hl
 
     ; Move and collide
     ld bc, (-5.0 >> 12) & $FFFF
@@ -413,7 +450,17 @@ applyPlayerVelocity::
     ld [yamnt + 1], a
     ld hl, PlayerSprite
     call ldHLToStructAddress
+    ; Repeat until velocity is zero in this direction
+.loopLeft:
     call moveCollideThreePoint
+    pop hl
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    push hl
+    ld a, h
+    or a, l
+    jp nz, .loopLeft
+    pop hl
 
 .skipLeft:
 
@@ -430,6 +477,21 @@ applyPlayerVelocity::
     or a, l
     jp z, .skipDown
 
+    ; If not zero, then ceiling
+    ld a, l
+    and a, %00001111
+    jp z, .contDown
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    ; Now clear the decimals
+    ld a, l
+    and a, %11110000
+    ld l, a
+.contDown:
+
+    ; Save hl
+    push hl
+
     ; Move and collide
     ld bc, (-4.0 >> 12) & $FFFF
     ld a, b
@@ -463,7 +525,17 @@ applyPlayerVelocity::
     ld [yamnt + 1], a
     ld hl, PlayerSprite
     call ldHLToStructAddress
+    ; Repeat until velocity is zero in this direction
+.loopDown:
     call moveCollideTwoPoint
+    pop hl
+    ld bc, (-1.0 >> 12) & $FFFF
+    add hl, bc
+    push hl
+    ld a, h
+    or a, l
+    jp nz, .loopDown
+    pop hl
 
 .skipDown:
 
@@ -472,6 +544,18 @@ applyPlayerVelocity::
     ld h, a
     bit 7, h
     jp z, .skipUp
+
+    ; Get the rest of the velocity
+    ld a, [PlayerSprite_YVel + 1]
+    ld l, a
+    
+    ; Clear the decimals
+    ld a, l
+    and a, %11110000
+    ld l, a
+
+    ; Save hl
+    push hl
 
     ; Move and collide
     ld bc, (-4.0 >> 12) & $FFFF
@@ -506,7 +590,17 @@ applyPlayerVelocity::
     ld [yamnt + 1], a
     ld hl, PlayerSprite
     call ldHLToStructAddress
+    ; Repeat until velocity is zero in this direction
+.loopUp:
     call moveCollideTwoPoint
+    pop hl
+    ld bc, (1.0 >> 12) & $FFFF
+    add hl, bc
+    push hl
+    ld a, h
+    or a, l
+    jp nz, .loopUp
+    pop hl
 
 .skipUp:
     
@@ -553,21 +647,43 @@ setPlayerVelocities::
     ;jp z, .skipDown
 
     ; Set velocity to positive one
-    ld bc, (1.0 >> 12) & $FFFF
-    ld a, b
+    ld bc, (0.2 >> 12) & $FFFF
+    
+    ; Test if an addition should happen
+    ld a, [PlayerSprite_YVel]
+    ld h, a
+    ld a, [PlayerSprite_YVel + 1]
+    ld l, a
+    ; If the subtraction is already negative, we know that hl is under 3 and we can do another sub
+    bit 7, h
+    jp nz, .doGrav
+    ; Do test
+    ld de, (-3.0 >> 12) & $FFFF
+    add hl, de
+    ; If the subtraction went negative, we know that hl is under 3 and we can do another sub
+    bit 7, h
+    jp z, .skipDown
+
+    ld a, [PlayerSprite_YVel]
+    ld h, a
+    ld a, [PlayerSprite_YVel + 1]
+    ld l, a
+.doGrav:
+    add hl, bc
+    ld a, h
     ld [PlayerSprite_YVel], a
-    ld a, c
+    ld a, l
     ld [PlayerSprite_YVel + 1], a
 
 .skipDown:
 
     ; Check joypad up
-    ld a, [joypadState]
+    ld a, [joypadPressed]
     and a, %01000000
     jp z, .skipUp
 
     ; Set velocity to negative one
-    ld bc, (-1.0 >> 12) & $FFFF
+    ld bc, (-3.0 >> 12) & $FFFF
     ld a, b
     ld [PlayerSprite_YVel], a
     ld a, c
@@ -585,10 +701,213 @@ setPlayerVelocities::
     ld a, 0
     ld [PlayerSprite_XVel], a
     ld [PlayerSprite_XVel + 1], a
-    ld [PlayerSprite_YVel], a
-    ld [PlayerSprite_YVel + 1], a
+
+    ; Reset gravity    
+    ld bc, (-4.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset1], a
+    ld a, c
+    ld [xOffset1 + 1], a
+    ld bc, (3.0 >> 12) & $FFFF
+    ld a, b
+    ld [xOffset2], a
+    ld a, c
+    ld [xOffset2 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset1], a
+    ld a, c
+    ld [yOffset1 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [yOffset2], a
+    ld a, c
+    ld [yOffset2 + 1], a
+    ld bc, (0.0 >> 12) & $FFFF
+    ld a, b
+    ld [xamnt], a
+    ld a, c
+    ld [xamnt + 1], a
+    ld bc, (1.0 >> 12) & $FFFF
+    ld a, b
+    ld [yamnt], a
+    ld a, c
+    ld [yamnt + 1], a
+    ld hl, PlayerSprite
+    call ldHLToStructAddress
+    call resetGravityYVel
 
     ret
+
+; Check collision and if there is collision, then reset YVel
+; @param xamnt -    16-bit floating point
+; @param yamnt -    16-bit floating point
+; @param xOffset1 - 16-bit floating point
+; @param yOffset1 - 16-bit floating point
+; @param xOffset2 - 16-bit floating point
+; @param yOffset2 - 16-bit floating point
+resetGravityYVel:
+    
+
+    ; Get the address of the current structure
+    ; Load the StructAddress into HL
+    ; StructAddress + 0 - MetaSprite Byte 1
+    ; StructAddress + 1 - MetaSprite Byte 2
+    ; StructAddress + 2 - YPos Byte 1
+    ; StructAddress + 3 - YPos Byte 2
+    ; StructAddress + 4 - XPos Byte 1
+    ; StructAddress + 5 - XPos Byte 2
+    call ldStructAddressToHL
+    ; When we first load the struct address it points to the first byte of the metasprite. Incrementing it *should* go through the different parts of the struct
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; Since StructAddress + 0 = MetaSprite Byte 1, this should be the first byte of the XPos because it is StructAddress (HL) + 4
+
+    ; Check a collision point to the right
+    ld a, [hli] ; We increment to move to the next byte after reading the address value
+    ld b, a
+    ld a, [hl] ; We don't need to increment this time. 
+    ld c, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset1]
+    ld h, a
+    ld a, [xOffset1 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
+
+    ld a, [hli] ; We need to increment in order to get to the next byte
+    ld d, a
+    ld a, [hl] 
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-1.0 >> 12) & $FFFF 
+    ld a, [yOffset1]
+    ld h, a
+    ld a, [yOffset1 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; XPos is at + 4, so we should be able to inc four times
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the XPos
+
+    ; Check a collision point to the left
+    ld a, [hli] ; Inc to get second byte
+    ld b, a
+    ld a, [hl]
+    ld c, a
+    ; Pixel offset for left collision point
+    ; ld hl, (-5.0 >> 12) & $FFFF 
+    ld a, [xOffset2]
+    ld h, a
+    ld a, [xOffset2 + 1]
+    ld l, a
+    add hl, bc
+    ld b, h 
+    ld c, l
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YPos is at + 2, so we should be able to inc twice
+    inc hl
+    inc hl ; This should be the YPos
+
+    ld a, [hli] ; Inc to next byte
+    ld d, a
+    ld a, [hl]
+    ld e, a
+    ; Pixel offset for right collision point
+    ; ld hl, (-15.0 >> 12) & $FFFF 
+    ld a, [yOffset2]
+    ld h, a
+    ld a, [yOffset2 + 1]
+    ld l, a
+    add hl, de
+    ld d, h 
+    ld e, l
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    sra d
+    rr e
+    
+    call CheckCollision
+
+    ; Check if a = 1
+    cp a, 1
+    jp z, .skip
+
+    ; If no collisions occured, then no need to do anything
+    jp .end
+
+.skip:
+    ; Reset YVel
+    ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
+    call ldStructAddressToHL
+    ; YVel is at + 6, so we should be able to inc 6 times
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl ; This should be the YVel
+    ld a, 0
+    ld [hli], a
+    ld a, 0
+    ld [hl], a
+
+.end:
+    ret
+
 
 ; Check collision and move left
 ; @param xamnt -    16-bit floating point
@@ -837,7 +1156,7 @@ moveCollideThreePoint:
     ret
 
 
-; Check collision and move left
+; Check collision and move
 ; @param xamnt -    16-bit floating point
 ; @param yamnt -    16-bit floating point
 ; @param xOffset1 - 16-bit floating point

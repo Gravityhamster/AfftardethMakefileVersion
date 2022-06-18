@@ -146,7 +146,9 @@ gameLoop:
     call setPlayerVelocities
 
     ; Move the screen
+    REPT 5
     call moveViewToFocusPoint
+    ENDR
 
     ; Draw all structs
     call RenderStructs
