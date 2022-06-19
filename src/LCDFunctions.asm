@@ -32,8 +32,8 @@ enableLCD::
 ; Set color palette - Sets the palette of the screen to %11100100
 loadPalette::
     ld a, %11100100
+    ; ld a, %11010010
     ld [rBGP], a
-    ld a, %11100100
     ld [rOBP0], a
     ; Return to code
     ret 

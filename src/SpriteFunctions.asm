@@ -26,7 +26,7 @@ InitStructs::
     ld de, (0.0 >> 12) & $FFFF
     call InitSpriteStruct
 
-    ld hl, EnemySprite1
+    /*ld hl, EnemySprite1
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (10.0 >> 12) & $FFFF
@@ -45,7 +45,7 @@ InitStructs::
     ld hl, EnemyMetasprite
     ld bc, (30.0 >> 12) & $FFFF
     ld de, (30.0 >> 12) & $FFFF
-    call InitSpriteStruct
+    call InitSpriteStruct*/
     
     ret
 
@@ -98,7 +98,7 @@ RenderStructs::
     ld hl, PlayerSprite
     call ldHLToStructAddress
     call RenderSprite
-    ; Enemy sprite 1
+    /*; Enemy sprite 1
     ld hl, EnemySprite1
     call ldHLToStructAddress
     call RenderSprite
@@ -109,7 +109,7 @@ RenderStructs::
     ; Enemy sprite 3
     ld hl, EnemySprite3
     call ldHLToStructAddress
-    call RenderSprite
+    call RenderSprite*/
     ret
 
 ; Load Address into Register HL
