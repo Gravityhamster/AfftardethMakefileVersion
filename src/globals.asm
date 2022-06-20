@@ -9,6 +9,8 @@ INCLUDE "structs.inc"
         bytes 2, XPos       ; 4, 5
         bytes 2, YVel       ; 6, 7
         bytes 2, XVel       ; 8, 9
+        bytes 1, Dir       ; 10
+        bytes 2, MetaSpritePrime ; 11, 12
     end_struct
 
 
@@ -24,14 +26,18 @@ PlayerMetasprite::
 
 ; Meta sprite 8x16:
 PlayerMetasprite::
-    db 0, 0, 0, 0
-    db 0, 8, 2, 0
+    db 0, 0, 0, %00000000
+    db 0, 8, 2, %00000000
+    db 128
+PlayerMetaspritePrime::
+    db 0, 8, 0, %00100000
+    db 0, 0, 2, %00100000
     db 128
 
 ; Meta sprite 8x16:
 EnemyMetasprite::
-    db 0, 0, 0, 0
-    db 0, 8, 2, 0
+    db 0, 0, 0, %00000000
+    db 0, 8, 2, %00000000
     db 128
 
 ; Tile sets
@@ -69,6 +75,12 @@ yOffset2::
 xOffset3::
     ds 2
 yOffset3::
+    ds 2
+cancelYVelocity::
+    ds 1
+
+; InitStruct variables
+altMetaSprite::
     ds 2
 
 ; Current Tilemap

@@ -21,6 +21,11 @@ InitStructs::
     ; Init structs
     ld hl, PlayerSprite
     call ldHLToStructAddress
+    ld hl, PlayerMetaspritePrime
+    ld a, h
+    ld [altMetaSprite], a
+    ld a, l
+    ld [altMetaSprite + 1], a
     ld hl, PlayerMetasprite
     ld bc, (0.0 >> 12) & $FFFF
     ld de, (0.0 >> 12) & $FFFF
@@ -54,6 +59,7 @@ InitStructs::
 ; @param hl - meta sprite
 ; @param bc - ypos
 ; @param de - xpos
+; @param altMetaSprite - meta sprite prime
 InitSpriteStruct::
     ; Save params
     push de ; xpos
@@ -88,6 +94,14 @@ InitSpriteStruct::
     ld [hli], a
     ; Load XVel data
     ld [hli], a
+    ld [hli], a
+    ; Load Dir data
+    ld a, 1
+    ld [hli], a
+    ; Load sprite data
+    ld a, [altMetaSprite]
+    ld [hli], a
+    ld a, [altMetaSprite + 1]
     ld [hli], a
 
     ret
@@ -132,13 +146,81 @@ ldHLToStructAddress::
 ; Render Metasprite
 ; @param structAddress
 RenderSprite::
-    ; Get the sprite address
+    ; Get the sprite address ----
+
+    ; Get the direction
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    ld a, [hl] ; read direction
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+
+    ; Check if a is 1 or 0
+    ; 0 - Sprite left (Prime)
+    ; 1 - Sprite right
+    dec a
+    jp z, .reg
+    
+    ; Go to metasprite prime if the dir is 0
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
     ld a, [hli]
     ld b, a
     ld a, [hli]
     ld c, a
     or a, b
     jp z, .skip
+    ; Go back to where we should be
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    jp .skipReg
+
+.reg:
+
+    ; Read regular
+    ld a, [hli]
+    ld b, a
+    ld a, [hli]
+    ld c, a
+    or a, b
+    jp z, .skip
+
+.skipReg:
+
     ; Load HL back to the struct address
     call ldHLToStructAddress
     ; Load the address into HL
@@ -337,6 +419,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 0
+    ld [cancelYVelocity], a
     ld bc, (4.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -412,6 +496,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 0
+    ld [cancelYVelocity], a
     ld bc, (-5.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -497,6 +583,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 0
+    ld [cancelYVelocity], a
     ld bc, (-4.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -562,6 +650,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 1
+    ld [cancelYVelocity], a
     ld bc, (-4.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -572,12 +662,12 @@ applyPlayerVelocity::
     ld [xOffset2], a
     ld a, c
     ld [xOffset2 + 1], a
-    ld bc, (-15.0 >> 12) & $FFFF
+    ld bc, (-16.0 >> 12) & $FFFF
     ld a, b
     ld [yOffset1], a
     ld a, c
     ld [yOffset1 + 1], a
-    ld bc, (-15.0 >> 12) & $FFFF
+    ld bc, (-16.0 >> 12) & $FFFF
     ld a, b
     ld [yOffset2], a
     ld a, c
@@ -622,6 +712,8 @@ setPlayerVelocities::
     and a, %00010000
     jp z, .skipRight
 
+    ld a, 1
+    ld [PlayerSprite_Dir], a
     ; Set velocity to positive one
     ld bc, (1.0 >> 12) & $FFFF
     ld a, b
@@ -636,6 +728,8 @@ setPlayerVelocities::
     and a, %00100000
     jp z, .skipLeft
 
+    ld a, 0
+    ld [PlayerSprite_Dir], a
     ; Set velocity to negative one
     ld bc, (-1.0 >> 12) & $FFFF
     ld a, b
@@ -683,9 +777,133 @@ setPlayerVelocities::
 
     ; Check joypad up
     ld a, [joypadPressed]
-    and a, %01000000
+    and a, %00000001
     jp z, .skipUp
 
+    ; Check if there is a collision
+    ld a, [PlayerSprite + 5]
+    ld c, a
+    ld a, [PlayerSprite + 4]
+    ld b, a
+    ld a, [PlayerSprite + 3]
+    ld e, a
+    ld a, [PlayerSprite + 2]
+    ld d, a
+    ;ld hl, (1.0 >> 12) & $FFFF
+    ;add hl, de
+    ;ld e, l
+    ;ld d, h
+    ; Bit shift BC right - This is a 16 bit number 1st digit - (0000 0000 0000) . (0000) 
+    ; So in order to cut off the decimal, we have to bit shift four places to the right
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ; Bit shift DE right
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    ; Call collision code
+    call CheckCollision
+    dec a
+    jp z, .doIt
+
+    ; Check if there is a collision
+    ld a, [PlayerSprite + 5]
+    ld c, a
+    ld a, [PlayerSprite + 4]
+    ld b, a
+    ld a, [PlayerSprite + 3]
+    ld e, a
+    ld a, [PlayerSprite + 2]
+    ld d, a
+    ;ld hl, (1.0 >> 12) & $FFFF
+    ;add hl, de
+    ;ld e, l
+    ;ld d, h
+    ; Bit shift BC right - This is a 16 bit number 1st digit - (0000 0000 0000) . (0000) 
+    ; So in order to cut off the decimal, we have to bit shift four places to the right
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ; Bit shift DE right
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    ; Add to get the bottom right corner
+    inc bc
+    inc bc
+    inc bc
+    ; Call collision code
+    call CheckCollision
+    dec a
+    jp z, .doIt
+
+    ; Check if there is a collision
+    ld a, [PlayerSprite + 5]
+    ld c, a
+    ld a, [PlayerSprite + 4]
+    ld b, a
+    ld a, [PlayerSprite + 3]
+    ld e, a
+    ld a, [PlayerSprite + 2]
+    ld d, a
+    ;ld hl, (1.0 >> 12) & $FFFF
+    ;add hl, de
+    ;ld e, l
+    ;ld d, h
+    ; Bit shift BC right - This is a 16 bit number 1st digit - (0000 0000 0000) . (0000) 
+    ; So in order to cut off the decimal, we have to bit shift four places to the right
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ; Bit shift DE right
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    ; Add to get the bottom right corner
+    dec bc
+    dec bc
+    dec bc
+    dec bc
+    ; Call collision code
+    call CheckCollision
+    dec a
+    jp z, .doIt
+    
+    ; If no collision, skip
+    jp .skipUp
+
+.doIt:
     ; Set velocity to negative one
     ld bc, (-3.0 >> 12) & $FFFF
     ld a, b
@@ -695,10 +913,6 @@ setPlayerVelocities::
 
 .skipUp:
     
-    ;; Set the focal point of the camera
-    ;call getPlayerFocusPointY
-    ;call getPlayerFocusPointX
-
     call applyPlayerVelocity
 
     ; Reset velocities
@@ -1161,12 +1375,13 @@ moveCollideThreePoint:
 
 
 ; Check collision and move
-; @param xamnt -    16-bit floating point
-; @param yamnt -    16-bit floating point
-; @param xOffset1 - 16-bit floating point
-; @param yOffset1 - 16-bit floating point
-; @param xOffset2 - 16-bit floating point
-; @param yOffset2 - 16-bit floating point
+; @param cancelYVelocity - 8-bit flag to determine whether we cancel velocity or not
+; @param xamnt           - 16-bit floating point
+; @param yamnt           - 16-bit floating point
+; @param xOffset1        - 16-bit floating point
+; @param yOffset1        - 16-bit floating point
+; @param xOffset2        - 16-bit floating point
+; @param yOffset2        - 16-bit floating point
 moveCollideTwoPoint:
 
     ; Get the address of the current structure
@@ -1239,7 +1454,7 @@ moveCollideTwoPoint:
 
     ; Check if a = 1
     cp a, 1
-    jp z, .skip
+    jp z, .maybeCancel
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -1304,7 +1519,7 @@ moveCollideTwoPoint:
 
     ; Check if a = 1
     cp a, 1
-    jp z, .skip
+    jp z, .maybeCancel
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -1339,6 +1554,18 @@ moveCollideTwoPoint:
     ld a, [yamnt + 1]
     ld c, a
     call AddToMemory16Bit
+    jp .skip
+
+.maybeCancel:
+    ld a, [cancelYVelocity] ; Get cancel yes or no
+    dec a
+    ; If zero, stop flag is on. If stop flag is on, then we should reset the yvel, otherwise, skip 
+    jp nz, .skip
+    
+    ; Reset player speed
+    ld a, 0
+    ld [PlayerSprite_YVel], a 
+    ld [PlayerSprite_YVel + 1], a 
 
 .skip:
     ret
