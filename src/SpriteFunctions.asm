@@ -704,7 +704,8 @@ applyPlayerVelocity::
 
     ret
     
-; Set velocities based on certain properties
+; Set velocities based on certain properties - With physics
+/*
 setPlayerVelocities::
 
     ; Check joypad right
@@ -956,6 +957,72 @@ setPlayerVelocities::
     call resetGravityYVel
 
     ret
+
+
+    ; Check collision and if there is collision, then reset YVel
+*/
+
+; DELETE FROM THIS POINT -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+; Set velocities based on certain properties - Without physics
+setPlayerVelocities::
+
+    ; Check joypad right
+    ld a, [joypadState]
+    and a, %00010000
+    jp z, .skipRight
+
+    ld a, 1
+    ld [PlayerSprite_Dir], a
+    ld de, PlayerSprite_XPos
+    ld bc, (1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+
+.skipRight:
+
+    ; Check joypad left
+    ld a, [joypadState]
+    and a, %00100000
+    jp z, .skipLeft
+
+    ld a, 0
+    ld [PlayerSprite_Dir], a
+    ld de, PlayerSprite_XPos
+    ld bc, (-1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+
+.skipLeft:
+
+    ; Check joypad down
+    ld a, [joypadState]
+    and a, %10000000
+    jp z, .skipDown
+
+    ld de, PlayerSprite_YPos
+    ld bc, (1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+
+.skipDown:
+
+    ; Check joypad up
+    ld a, [joypadState]
+    and a, %01000000
+    jp z, .skipUp
+
+    ld de, PlayerSprite_YPos
+    ld bc, (-1.0 >> 12) & $FFFF
+    call AddToMemory16Bit
+
+.skipUp:
+
+    call getPlayerFocusPointX
+    call getPlayerFocusPointY
+
+    ret
+
+
+; DELETE TO THIS POINT -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 ; Check collision and if there is collision, then reset YVel
 ; @param xamnt -    16-bit floating point
