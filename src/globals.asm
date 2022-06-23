@@ -97,17 +97,17 @@ structAddress::
 viewTargetX::
     ds 2
 viewTargetY::
-    ds 1
+    ds 2
 
 ; Last view position
 prevX::
     ds 1
 
 ; Struct references
-    dstruct metaSpriteTemplate, PlayerSprite
-    dstruct metaSpriteTemplate, EnemySprite1
-    dstruct metaSpriteTemplate, EnemySprite2
-    dstruct metaSpriteTemplate, EnemySprite3
+dstruct metaSpriteTemplate, PlayerSprite
+dstruct metaSpriteTemplate, EnemySprite1
+dstruct metaSpriteTemplate, EnemySprite2
+dstruct metaSpriteTemplate, EnemySprite3
 
 ; Sprite global offset
 YOffset::
@@ -133,17 +133,25 @@ wSimplePosition::
 ; 2-byte
 memX::
     ds 2
+memY::
+    ds 2
 
 ; 2-byte
 mapX::
+    ds 2
+mapY::
     ds 2
 
 ; 2-byte
 maxX::
     ds 4
+maxY::
+    ds 4
 
 ; 2-byte
 pixX::
+    ds 4
+pixY::
     ds 4
 
 ; 1-byte offset

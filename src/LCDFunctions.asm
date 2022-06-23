@@ -85,13 +85,21 @@ copyNewHillExtMap::
     ld hl, $9800
     ; Define map dims
     ld a, $00
-    ld [mapX], a
+    ld [mapX], a ; Units
     ld a, $40
     ld [mapX+1], a
     ld a, $01
-    ld [maxX], a
+    ld [maxX], a ; Pixels
     ld a, $60
     ld [maxX+1], a
+    ld a, $00
+    ld [mapY], a ; Units
+    ld a, $40
+    ld [mapY+1], a
+    ld a, $01
+    ld [maxY], a ; Pixels
+    ld a, $60
+    ld [maxY+1], a
     ; Push copied tilemap to VRAM
     jp pLoadExtendedMap
 

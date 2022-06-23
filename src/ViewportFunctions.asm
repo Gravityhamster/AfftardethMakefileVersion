@@ -168,13 +168,50 @@ MoveViewDown::
 ;    ld a, [joypadState]
 ;    and a, %10000000
 ;    jp z, .dskip  ; Input
+    ; Load maxyY
+    ld a, [maxY]
+    ld b, a
+    ld a, [maxY + 1]
+    ld c, a
+
+    ; load memy but in pixels
+    ld a, [pixY]
+    ld d, a
+    ld a, [pixY + 1]
+    ld e, a
+
+    ; Check if pixx == mapx
+    
+    ; b - d = ?
+    ld a, b
+    sub a, d
+    ld b, a
+
+    ; c - e = ?
+    ld a, c
+    sub a, e
+    ; Alright, check if this is a zero result:
+    or a, b
+
+    jp z, .dskip
+
+    ; increment pixY
+    ld a, [pixY]
+    ld b, a
+    ld a, [pixY+1]
+    ld c, a
+    inc bc
+    ld a, b
+    ld [pixY], a
+    ld a, c
+    ld [pixY+1], a
+
+    ; Increment view
     ld a, [SCY]
-    cp a, $70 ; clamp
-    jp nc, .dskip  ; clamp
     add a, 1
     ld [SCY], a
 
-    ; decrement YOffset
+    ; increment YOffset
     ld a, [YOffset]
     ld h, a
     ld a, [YOffset+1]
@@ -194,9 +231,28 @@ MoveViewUp::
 ;    ld a, [joypadState]
 ;    and a, %01000000
 ;    jp z, .uskip  ; Input
+   /* ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
     ld a, [SCY]
-    cp a, $01 ; clamp
-    jp c, .uskip ; clamp
+    or a, b
+    or a, c
+    ;jp z, .uskip */
+
+    ; decrement pixY
+    ld a, [pixY]
+    ld b, a
+    ld a, [pixY+1]
+    ld c, a
+    dec bc
+    ld a, b
+    ld [pixY], a
+    ld a, c
+    ld [pixY+1], a
+
+    ; Decrement view
+    ld a, [SCY]
     sub a, 1
     ld [SCY], a
 
@@ -520,6 +576,54 @@ moveViewToFocusPoint::
     jp .moveRight
 .endH:
 
+    ; Check if the pixX is greater than the focus point
+    ld a, [pixY]
+    ld b, a
+    ld a, [pixY+1]
+    ld c, a
+    ld a, [viewTargetY]
+    ld h, a
+    ld a, [viewTargetY+1]
+    ld l, a
+
+    ; Test
+    ; bc = current
+    ; hl = target
+    ; target - current = ?
+    ; If the result is 0, skipall
+    ; If the result is Carry, then target is left of current and we need to move left
+    ; If the result is Not Carry, then the target is right of current and we need to move right
+    
+    ; First we need to test the higher bits
+    ; h - b = ?
+    ld a, h
+    cp a, b
+    ; If the result is zero, then they are equal, but we need to check the lower bits
+    jp z, .checkLowerBitsV
+    ; If the result is Carry, then target is left of the current
+    jp c, .moveUp
+.moveDown:
+    call MoveViewDown
+    jp .endV
+.moveUp:
+    call MoveViewUp
+    jp .endV
+.checkLowerBitsV:
+    ; Now we need to test the lower bits
+    ; l - c = ?
+    ld a, l
+    cp a, c
+    ; If the result is zero, they are equal and we are done
+    jp z, .endV
+    ; If the result is Carry, then the target is left of the current
+    jp c, .moveUp
+    ; Else, move right
+    jp .moveDown
+.endV:
+
+
+
+/*
     ; Check if the SCX is greater than the focus point
     ld a, [SCY]
     ld b, a
@@ -536,5 +640,8 @@ moveViewToFocusPoint::
     call MoveViewUp
 .endV:
 ; Do not go
+*/
+
+
 
     ret
