@@ -101,7 +101,8 @@ copyNewHillExtMap::
     ld a, $60
     ld [maxY+1], a
     ; Push copied tilemap to VRAM
-    jp pLoadExtendedMap
+    ret
+    ;jp pLoadExtendedMap
 
 ; Loads the copied ext tilemap into VRAM - Loads the map into the VRAM at $9800
 ; NEVER CALL THIS FUNCTION DIRECTLY

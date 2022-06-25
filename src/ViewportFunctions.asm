@@ -195,6 +195,24 @@ MoveViewDown::
 
     jp z, .dskip
 
+    ; Load SCY into a
+    ld a, [SCY] ; [SCY] is Viewport Y
+    and a, %00000111
+    ; Only load a row and increment memY if the viewport is divisible by 8
+    jp nz, .skip1 ; Skip the column drawing code if not zero
+    
+    call getNextRowDown
+
+    ld a, [SCY]
+    ld [prevY], a
+
+.skip1:
+
+    ; Increment view
+    ld a, [SCY]
+    add a, 1
+    ld [SCY], a
+
     ; increment pixY
     ld a, [pixY]
     ld b, a
@@ -205,11 +223,6 @@ MoveViewDown::
     ld [pixY], a
     ld a, c
     ld [pixY+1], a
-
-    ; Increment view
-    ld a, [SCY]
-    add a, 1
-    ld [SCY], a
 
     ; increment YOffset
     ld a, [YOffset]
@@ -525,7 +538,245 @@ setTileForColumn::
 
     ; Return to code
     ret
+
+; Get bottom and to the left
+getNextRowDown::
+
+    /*; Get the current tilemap and put in HL
+    ld a, [currentTileMap]
+    ld h, a
+    ld a, [currentTileMap + 1]
+    ld l, a
+    ld bc, $240
+    add hl, bc*/
+
+    ; Load memY into BC
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+
+    ; Check if the viewport is 0 
+    ld a, [SCY]
+    or b
+    or c
     
+    jp z, .skipInc
+
+    ; Increment BC
+    inc bc
+
+    ; Reading back BC to memY
+    ld a, b
+    ld [memY], a
+    ld a, c
+    ld [memY + 1], a
+    
+.skipInc:
+
+    ; Setting DE - Source Tile
+
+    ; Load the location into DE
+    ld de, HillsMapTilemap
+    ; de += mapX * 18 
+    ld h, d
+    ld l, e
+    ld a, [mapX]
+    ld d, a
+    ld a, [mapX + 1]
+    ld e, a
+    ld a, 18
+.loopShiftDown:
+    add hl, de
+    dec a
+    jp nz, .loopShiftDown
+    ld d, h
+    ld e, l
+
+    ; Load memY into BC
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+    
+    ;or b
+    ;jp z, .loopSkip
+
+    ; add the width of the map to the source location 
+    ; de += mapX * memY + memX    
+    ld h, d
+    ld l, e
+    ld a, [mapX]
+    ld d, a
+    ld a, [mapX + 1]
+    ld e, a
+.addLoop:
+    ; Check zero
+    ld a, b
+    or c
+    jp z, .loopSkip
+    add hl, de
+    dec bc
+    jp .addLoop
+
+.loopSkip:
+    ld a, [memX]
+    ld d, a
+    ld a, [memX + 1]
+    ld e, a
+    add hl, de
+    ld d, h
+    ld e, l
+
+    ; Setting HL - Destination Location
+
+    ; Get screen position
+    ld a, [SCY]
+    ; Divide by 8
+    sra a
+    sra a
+    sra a
+    ; Clear bad sign bits
+    and a, %00011111
+
+    ; Set BC to the screen offset: floor ( Screen position / 8 )
+    ; Multiply a by 32
+
+    ld b, 0
+    ld c, a
+
+    ; BC times 32
+    sla c
+    rl b
+    sla c
+    rl b
+    sla c
+    rl b
+    sla c
+    rl b
+    sla c
+    rl b
+
+    inc bc
+
+    ; Set hl to the VRAM address plus the number of tiles across the screen
+    ld hl, $9800 + $240
+
+    ; Add the screen offset to the VRAM position
+    add hl, bc
+    ld a, [memX]
+    ld b, a
+    ld a, [memX + 1]
+    ld c, a
+    add hl, bc
+
+    ; Only do a wrap if h >= 9C
+    ld a, $9C
+    sub a, h
+    jp z, .doWrap
+    jp nc, .skipWrap
+.doWrap:
+    ; Wrap around screen
+    push de
+    ld d, $9C
+    ld e, $00
+
+    ; Execute hl - $9C00
+    ld a, h
+    xor a, d
+    ld d, a
+    ld a, l
+    xor a, e
+    ld e, a
+
+    ; de is now the remainder of hl - $9C00
+    ; So now we can take that remainder add it to $9800
+    ld hl, $9800
+    add hl, de
+
+    pop de
+    ; End wrap
+.skipWrap:
+
+    /*; Load the current number into A
+    ld a, l
+    ; Subtract the offset from HL to see if it must be shifted
+    sub a, $1
+
+    ; If the subtraction causes overflow, then we know the register is < 32, and we do not need to subtract from it, in which case we jump.
+    ; If the subtraction does not cause overflow, then we know the register is >= 32, and we need to subtract from it.
+    jp c, .c*/
+
+    ; Align correctly
+    ld a, l
+    sub a, $1
+    ld l, a
+
+.c:
+
+    ; Draw the entire column
+    jp drawRow
+
+; Draw row
+drawRow:
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    call setTileForRow
+    ; Ret to code
+    ret
+
+; One tile and goto next
+setTileForRow::
+    ; Wait for HBlank, otherwise screen dies in a fire (glitchiness)
+.waitVRAM
+    ldh a, [rSTAT]
+    and a, STATF_BUSY
+    jr nz, .waitVRAM  
+
+    ; Set to appropriate tile.
+    ld a, [de]
+    ld [hl], a
+
+    ; Move to next tile
+    inc de
+
+    ; Add 1 to hl
+    ld a, $1
+    add a, l
+    ld l, a
+    adc a, h
+    sub l
+    ld h, a    
+
+    ; Okay, so here's the deal, when the viewport extends beyond the right side, it causes it to draw to the next row.
+    ; If we can determine if an extension around the edge of the screen occured, we can then subtract $20 to HL
+    ; in order to shift the row back up to where it needs to be.
+    ; In order to do this however, we need to determine if the 2 order Hex has shifted from odd to even. i.e. 997F -> 9980
+    ; At the center of the screen the number goes from even to odd 996F -> 9970. This is okay. But at the end of the screen
+    ; It goes from odd to even. Once we know this has occured, all we have to do is subtract $20 from HL. While HL does not
+    ; have a subtraction command, we may be able to bypass this by using XOR like we did in getNextRowDown
+
+    ; Return to code
+    ret
+
 ; Move to the 
 moveViewToFocusPoint::
     ; SCX

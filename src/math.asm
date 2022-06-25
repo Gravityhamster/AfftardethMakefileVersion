@@ -1,12 +1,13 @@
-INCLUDE "hardware.inc"
+;INCLUDE "hardware.inc"
 
-SECTION "Math Functions", ROM0
+;SECTION "Math Functions", ROM0
 
 ; -------------------------------------
 ; Function definitions - Math Functions
 ; -------------------------------------
 
 ; Multiplay BC times 32
+/*
 BCTimes32::
 
     ; BC * 2 - 1
@@ -107,6 +108,7 @@ HLTimes32::
     ;sla b
     ; Return to code
     ret
+*/
 
 /*
 ; Bit shift HL right

@@ -102,12 +102,14 @@ viewTargetY::
 ; Last view position
 prevX::
     ds 1
+prevY::
+    ds 1
 
-; Struct references
-dstruct metaSpriteTemplate, PlayerSprite
-dstruct metaSpriteTemplate, EnemySprite1
-dstruct metaSpriteTemplate, EnemySprite2
-dstruct metaSpriteTemplate, EnemySprite3
+; Struct references - Must be indented
+    dstruct metaSpriteTemplate, PlayerSprite
+    dstruct metaSpriteTemplate, EnemySprite1
+    dstruct metaSpriteTemplate, EnemySprite2
+    dstruct metaSpriteTemplate, EnemySprite3
 
 ; Sprite global offset
 YOffset::
@@ -142,17 +144,21 @@ mapX::
 mapY::
     ds 2
 
-; 2-byte
+; 4-byte
 maxX::
     ds 4
 maxY::
     ds 4
 
-; 2-byte
+; 4-byte
 pixX::
     ds 4
 pixY::
     ds 4
+
+; 1-byte used for testing in the y-scrolling
+lastSecondHex::
+    ds 1
 
 ; 1-byte offset
 drawOffset::
