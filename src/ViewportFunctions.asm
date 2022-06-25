@@ -417,6 +417,10 @@ getNextColumnLeft::
     and a, %00011111
     dec a
     ld [SCXS], a
+    sub a, $FF
+    jp nz, .zz
+    ld a, $1F
+    ld [SCXS], a
 
 .zz:
 
@@ -720,6 +724,7 @@ getNextRowDown::
     ; End wrap
 .skipWrap:
 
+    /*ld b, b
     ; Load the current number into A
     ld a, l
     ; Subtract the offset from HL to see if it must be shifted
@@ -734,7 +739,9 @@ getNextRowDown::
     sub a, $1
     ld l, a
 
-.c:
+.c:*/
+
+    dec hl
 
     ; Draw the entire column
     jp drawRow
@@ -750,25 +757,445 @@ drawRow:
     ld [lastSecondHex], a
 
     call setTileForRow
+    ; If SCXS - $0C == $14, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $13
+    ; And this value
+    ;            v
+    jp nz, .skip_14
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_14:
     call setTileForRow
+    ; If SCXS - $0C == $13, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $12
+    ; And this value
+    ;            v
+    jp nz, .skip_13
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_13:
     call setTileForRow
+    ; If SCXS - $0C == $12, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $11
+    ; And this value
+    ;            v
+    jp nz, .skip_12
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_12:
     call setTileForRow
+    ; If SCXS - $0C == $11, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $10
+    ; And this value
+    ;            v
+    jp nz, .skip_11
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_11:
     call setTileForRow
+    ; If SCXS - $0C == $10, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $0F
+    ; And this value
+    ;            v
+    jp nz, .skip_10
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_10:
     call setTileForRow
+    ; If SCXS - $0C == $0F, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $0E
+    ; And this value
+    ;            v
+    jp nz, .skip_F
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_F:
     call setTileForRow
+    ; If SCXS - $0C == $0E, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $0D
+    ; And this value
+    ;            v
+    jp nz, .skip_E
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_E:
     call setTileForRow
+    ; If SCXS - $0C == $0D, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $0C
+    ; And this value
+    ;            v
+    jp nz, .skip_D
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_D:
     call setTileForRow
+    ; If SCXS - $0C == $0C, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $0B
+    ; And this value
+    ;            v
+    jp nz, .skip_C
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_C:
     call setTileForRow
+    ; If SCXS - $0C == $0B, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $0A
+    ; And this value
+    ;            v
+    jp nz, .skip_B
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_B:
     call setTileForRow
+    ; If SCXS - $0C == $0A, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $09
+    ; And this value
+    ;            v
+    jp nz, .skip_A
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_A:
     call setTileForRow
+    ; If SCXS - $0C == $09, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $08
+    ; And this value
+    ;            v
+    jp nz, .skip_9
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_9:
     call setTileForRow
+    ; If SCXS - $0C == $08, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $07
+    ; And this value
+    ;            v
+    jp nz, .skip_8
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_8:
     call setTileForRow
+    ; If SCXS - $0C == $07, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $06
+    ; And this value
+    ;            v
+    jp nz, .skip_7
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_7:
     call setTileForRow
+    ; If SCXS - $0C == $06, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $05
+    ; And this value
+    ;            v
+    jp nz, .skip_6
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_6:
     call setTileForRow
+    ; If SCXS - $0C == $05, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $04
+    ; And this value
+    ;            v
+    jp nz, .skip_5
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_5:
     call setTileForRow
+    ; If SCXS - $0C == $04, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $03
+    ; And this value
+    ;            v
+    jp nz, .skip_4
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_4:
     call setTileForRow
+    ; If SCXS - $0C == $03, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $02
+    ; And this value
+    ;            v
+    jp nz, .skip_3
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_3:
     call setTileForRow
+    ; If SCXS - $0C == $02, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $01
+    ; And this value
+    ;            v
+    jp nz, .skip_2
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_2:
     call setTileForRow
+    ; If SCXS - $0C == $01, then HL -= $20
+    ld a, [SCXS]
+    sub a, $0C
+    ; Change this value 
+    ;       v
+    sub a, $00
+    ; And this value
+    ;            v
+    jp nz, .skip_1
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+    ; And this value
+    ; v
+.skip_1:
     call setTileForRow
     ; Ret to code
     ret
