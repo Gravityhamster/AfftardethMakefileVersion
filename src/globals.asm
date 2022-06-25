@@ -135,6 +135,9 @@ wSimplePosition::
 ; 2-byte
 memX::
     ds 2
+; 1-byte
+SCXS::
+    ds 1
 memY::
     ds 2
 
@@ -157,6 +160,8 @@ pixY::
     ds 4
 
 ; 1-byte used for testing in the y-scrolling
+currentHex::
+    ds 1
 lastSecondHex::
     ds 1
 

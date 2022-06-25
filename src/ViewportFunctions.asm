@@ -9,7 +9,7 @@ SECTION "Viewport Functions", ROM0
 
 ; Move the viewport
 moveViewPortx1y1::
-    
+
     call MoveViewRight
     call MoveViewLeft
     call MoveViewDown
@@ -317,6 +317,15 @@ getNextColumnRight::
     ld a, c
     ld [memX + 1], a
     
+    ld a, [rSCX]
+    ; Divide by 8
+    sra a
+    sra a
+    sra a
+    ; Clear bad sign bits
+    and a, %00011111
+    ld [SCXS], a
+    
 .skipInc:
 
     ; Setting DE
@@ -398,6 +407,16 @@ getNextColumnLeft::
     ld [memX], a
     ld a, c
     ld [memX + 1], a
+    
+    ld a, [rSCX]
+    ; Divide by 8
+    sra a
+    sra a
+    sra a
+    ; Clear bad sign bits
+    and a, %00011111
+    dec a
+    ld [SCXS], a
 
 .zz:
 
@@ -664,9 +683,12 @@ getNextRowDown::
 
     ; Add the screen offset to the VRAM position
     add hl, bc
-    ld a, [memX]
-    ld b, a
-    ld a, [memX + 1]
+    ;ld a, [memX]
+    ;ld b, a
+    ;ld a, [memX + 1]
+    ;ld c, a
+    ld a, [SCXS]
+    ld b, 0
     ld c, a
     add hl, bc
 
@@ -698,14 +720,14 @@ getNextRowDown::
     ; End wrap
 .skipWrap:
 
-    /*; Load the current number into A
+    ; Load the current number into A
     ld a, l
     ; Subtract the offset from HL to see if it must be shifted
     sub a, $1
 
     ; If the subtraction causes overflow, then we know the register is < 32, and we do not need to subtract from it, in which case we jump.
     ; If the subtraction does not cause overflow, then we know the register is >= 32, and we need to subtract from it.
-    jp c, .c*/
+    jp c, .c
 
     ; Align correctly
     ld a, l
@@ -719,6 +741,14 @@ getNextRowDown::
 
 ; Draw row
 drawRow:
+
+    ld a, l
+    sra a
+    sra a
+    sra a
+    sra a
+    ld [lastSecondHex], a
+
     call setTileForRow
     call setTileForRow
     call setTileForRow
@@ -771,8 +801,33 @@ setTileForRow::
     ; in order to shift the row back up to where it needs to be.
     ; In order to do this however, we need to determine if the 2 order Hex has shifted from odd to even. i.e. 997F -> 9980
     ; At the center of the screen the number goes from even to odd 996F -> 9970. This is okay. But at the end of the screen
-    ; It goes from odd to even. Once we know this has occured, all we have to do is subtract $20 from HL. While HL does not
-    ; have a subtraction command, we may be able to bypass this by using XOR like we did in getNextRowDown
+    ; It goes from odd to even. Once we know this has occured, all we have to do is subtract $20 from HL.
+    
+    ; In order to determine if we need to do something, then we need to check if l is even and lastSecondHex is odd.
+    ; To check if l is even, first load into a.
+    ; Then just sub 2 until either overflow occurs or z occurs.
+    ; If overflow, then odd. If z, then even.
+    ; If odd, goto skipCheck.
+    ; If even, continue the checking.
+    
+    ; To check if lastSecondHex is even, first load into a.
+    ; Then just sub 2 until either overflow occurs or z occurs.
+    ; If overflow, then odd. If z, then even.
+    ; If odd, then subtract $20 from hl.
+    ; If even, goto skipCheck.
+
+    ; Alright, now we need to subtract $20 from HL
+
+
+.skipCheck:
+    ; Save $00X0 into lastSecondHex
+    ; This should be l bit shifted right four times
+    ld a, l
+    sra a
+    sra a
+    sra a
+    sra a
+    ld [lastSecondHex], a
 
     ; Return to code
     ret
