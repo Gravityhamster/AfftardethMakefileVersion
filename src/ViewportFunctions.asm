@@ -264,6 +264,29 @@ MoveViewUp::
     ld a, c
     ld [pixY+1], a
 
+    ; Load SCY into a
+    ld a, [pixY] ; [SCY] is Viewport Y
+    ld b, a
+    ld a, [pixY + 1]
+    ld c, a
+    ld a, b
+    or c
+    jp z, .skip1
+
+    ld a, [SCY]
+    and a, %00000111
+    ; Only load a row and increment memY if the viewport is
+    ; 1 pixel greater than a number divisible by 8
+    dec a
+    jp nz, .skip1 ; Skip the column drawing code if not zero
+    
+    call getNextRowUp
+
+    ld a, [SCY]
+    ld [prevY], a
+
+.skip1:
+
     ; Decrement view
     ld a, [SCY]
     sub a, 1
@@ -684,6 +707,169 @@ getNextRowDown::
 
     ; Set hl to the VRAM address plus the number of tiles across the screen
     ld hl, $9800 + $240
+
+    ; Add the screen offset to the VRAM position
+    add hl, bc
+    ;ld a, [memX]
+    ;ld b, a
+    ;ld a, [memX + 1]
+    ;ld c, a
+    ld a, [SCXS]
+    ld b, 0
+    ld c, a
+    add hl, bc
+
+    ; Only do a wrap if h >= 9C
+    ld a, $9C
+    sub a, h
+    jp z, .doWrap
+    jp nc, .skipWrap
+.doWrap:
+    ; Wrap around screen
+    push de
+    ld d, $9C
+    ld e, $00
+
+    ; Execute hl - $9C00
+    ld a, h
+    xor a, d
+    ld d, a
+    ld a, l
+    xor a, e
+    ld e, a
+
+    ; de is now the remainder of hl - $9C00
+    ; So now we can take that remainder add it to $9800
+    ld hl, $9800
+    add hl, de
+
+    pop de
+    ; End wrap
+.skipWrap:
+
+    /*ld b, b
+    ; Load the current number into A
+    ld a, l
+    ; Subtract the offset from HL to see if it must be shifted
+    sub a, $1
+
+    ; If the subtraction causes overflow, then we know the register is < 32, and we do not need to subtract from it, in which case we jump.
+    ; If the subtraction does not cause overflow, then we know the register is >= 32, and we need to subtract from it.
+    jp c, .c
+
+    ; Align correctly
+    ld a, l
+    sub a, $1
+    ld l, a
+
+.c:*/
+
+    dec hl
+
+    ; Draw the entire column
+    jp drawRow
+
+
+; Get top and to the left
+getNextRowUp::
+
+    ; Load memY into BC
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+
+    ; Check if the viewport is mapY
+    ld a, [SCY]
+    or b
+    or c
+    
+    jp z, .skipInc
+
+    ; Increment BC
+    dec bc
+
+    ; Reading back BC to memY
+    ld a, b
+    ld [memY], a
+    ld a, c
+    ld [memY + 1], a
+    
+.skipInc:
+
+    ; Setting DE - Source Tile
+
+    ; Load the location into DE
+    ld de, HillsMapTilemap
+
+    ; Load memY into BC
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+    
+    ;or b
+    ;jp z, .loopSkip
+
+    ; add the width of the map to the source location 
+    ; de += mapX * memY + memX    
+    ld h, d
+    ld l, e
+    ld a, [mapX]
+    ld d, a
+    ld a, [mapX + 1]
+    ld e, a
+.addLoop:
+    ; Check zero
+    ld a, b
+    or c
+    jp z, .loopSkip
+    add hl, de
+    dec bc
+    jp .addLoop
+
+.loopSkip:
+    ld a, [memX]
+    ld d, a
+    ld a, [memX + 1]
+    ld e, a
+    add hl, de
+    ld d, h
+    ld e, l
+
+    ; Setting HL - Destination Location
+
+    ; Get screen position
+    ld a, [SCY]
+    ; Divide by 8
+    sra a
+    sra a
+    sra a
+    ; Clear bad sign bits
+    and a, %00011111
+
+    ; Set BC to the screen offset: floor ( Screen position / 8 )
+    ; Multiply a by 32
+
+    ld b, 0
+    ld c, a
+
+    ; BC times 32
+    sla c
+    rl b
+    sla c
+    rl b
+    sla c
+    rl b
+    sla c
+    rl b
+    sla c
+    rl b
+
+    inc bc
+
+    ; Set hl to the VRAM address plus the number of tiles across the screen
+    ld hl, $9800 - $20
 
     ; Add the screen offset to the VRAM position
     add hl, bc

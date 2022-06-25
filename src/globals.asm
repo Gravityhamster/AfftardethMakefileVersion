@@ -147,17 +147,17 @@ mapX::
 mapY::
     ds 2
 
-; 4-byte
+; 2-byte
 maxX::
-    ds 4
+    ds 2
 maxY::
-    ds 4
+    ds 2
 
-; 4-byte
+; 2-byte
 pixX::
-    ds 4
+    ds 2
 pixY::
-    ds 4
+    ds 2
 
 ; 1-byte used for testing in the y-scrolling
 currentHex::
