@@ -461,7 +461,61 @@ getNextColumnLeft::
     ld d, h
     ld e, l
 
+    ; Shift de down by memY * mapX
+
+    ; Add screen Y offset. This is done by adding memY * mapX to the screen
+    ; I.e. for memY times, add mapX to hl
+    ld h, d
+    ld l, e
+    ld a, [mapX]
+    ld d, a
+    ld a, [mapX + 1]
+    ld e, a
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+    ld a, b
+    or c
+    jp z, .skipThisLoopTile
+.loopShiftTile:
+    ; Add $20 to HL
+    add hl, de
+    ; Loop until bc == 0
+    dec bc
+    ld a, b
+    or c
+    jp nz, .loopShiftTile
+.skipThisLoopTile:
+    ld d, h
+    ld e, l
+
     ; Setting HL
+
+    ; Set hl to the VRAM address plus the number of tiles across the screen
+    ld hl, $9800 + 31
+
+    ; Add screen Y offset. This is done by adding memY * $20 to the screen
+    ; I.e. for memY times, add $20 to hl
+    push de
+    ld de, $20
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+    ld a, b
+    or c
+    jp z, .skipThisLoop
+.loopShift:
+    ; Add $20 to HL
+    add hl, de
+    ; Loop until bc == 0
+    dec bc
+    ld a, b
+    or c
+    jp nz, .loopShift
+.skipThisLoop:
+    pop de
 
     ; Get screen position
     ld a, [SCX]
@@ -476,8 +530,6 @@ getNextColumnLeft::
     ld b, 0
     ld c, a
 
-    ; Set hl to the VRAM address plus the number of tiles across the screen
-    ld hl, $9800 + 31
     ; Add the screen offset to the VRAM position
     add hl, bc
 
@@ -520,6 +572,7 @@ drawColumn::
     call setTileForColumn
     call setTileForColumn
     call setTileForColumn
+    /*call setTileForColumn
     call setTileForColumn
     call setTileForColumn
     call setTileForColumn
@@ -531,8 +584,7 @@ drawColumn::
     call setTileForColumn
     call setTileForColumn
     call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
+    call setTileForColumn*/
     ; Ret to code
     ret
 
