@@ -138,8 +138,12 @@ memX::
 ; 1-byte
 SCXS::
     ds 1
+; 2-byte
 memY::
     ds 2
+; 1-byte
+SCYS::
+    ds 1
 
 ; 2-byte
 mapX::

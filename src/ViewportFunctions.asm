@@ -365,9 +365,60 @@ getNextColumnRight::
     ld d, h
     ld e, l
 
-.loopSkip:
+    ; Shift de down by memY * mapX
+
+    ; Add screen Y offset. This is done by adding memY * mapX to the screen
+    ; I.e. for memY times, add mapX to hl
+    ld h, d
+    ld l, e
+    ld a, [mapX]
+    ld d, a
+    ld a, [mapX + 1]
+    ld e, a
+    ld a, [memY]
+    ld b, a
+    ld a, [memY + 1]
+    ld c, a
+    ld a, b
+    or c
+    jp z, .skipThisLoopTile
+.loopShiftTile:
+    ; Add $20 to HL
+    add hl, de
+    ; Loop until bc == 0
+    dec bc
+    ld a, b
+    or c
+    jp nz, .loopShiftTile
+.skipThisLoopTile:
+    ld d, h
+    ld e, l
 
     ; Setting HL
+    
+    ; Set hl to the VRAM address plus the number of tiles across the screen
+    ld hl, $9800 + 20
+
+    ; Add screen Y offset. This is done by adding memY * $20 to the screen
+    ; I.e. for memY times, add $20 to hl
+    push de
+    ld de, $20
+    ld b, 0
+    ld a, [SCYS]
+    ld c, a
+    ld a, b
+    or c
+    jp z, .skipThisLoop
+.loopShift:
+    ; Add $20 to HL
+    add hl, de
+    ; Loop until bc == 0
+    dec bc
+    ld a, b
+    or c
+    jp nz, .loopShift
+.skipThisLoop:
+    pop de
 
     ; Get screen position
     ld a, [SCX]
@@ -381,28 +432,30 @@ getNextColumnRight::
     ; Set BC to the screen offset: floor ( Screen position / 8 )
     ld b, 0
     ld c, a
-    
-    ; Set hl to the VRAM address plus the number of tiles across the screen
-    ld hl, $9800 + 20
     ; Add the screen offset to the VRAM position
     add hl, bc
 
-    ; Load the current number into A
-    ld a, l
-    ; Subtract the offset from HL to see if it must be shifted
-    sub a, $20
-
-    ; If the subtraction causes overflow, then we know the register is < 32, and we do not need to subtract from it, in which case we jump.
-    ; If the subtraction does not cause overflow, then we know the register is >= 32, and we need to subtract from it.
-    jp c, .c
-    ; HL minus 20 hex
-    ld a, l
-    sub a, $20
-    ld l, a
-
-.c:
+    ; If SCXS > $0B
+    ; Then HL -= $20
+    ; In order to determine if a number is > $0B,
+    ; Subtract $0C. If a carry does not occurs,
+    ; then we know that the number > $0B
+    ld a, [SCXS]
+    sub a, $0C
+    jp c, .skipAdjust
+    ld a, $20
+    ; Add 256 - A to HL
+    cpl
+    scf
+    adc   a, l
+    ld    l, a
+    ld    a, -1 ; And subtract 256 here
+    adc   a, h
+    ld    h, a
+.skipAdjust:
 
     ; Draw the entire column
+    ; ld b,b
     jp drawColumn
 
 ; Get top and to the Left
@@ -493,15 +546,14 @@ getNextColumnLeft::
     ; Setting HL
 
     ; Set hl to the VRAM address plus the number of tiles across the screen
-    ld hl, $9800 + 31
+    ld hl, $9800 - 1
 
     ; Add screen Y offset. This is done by adding memY * $20 to the screen
     ; I.e. for memY times, add $20 to hl
     push de
     ld de, $20
-    ld a, [memY]
-    ld b, a
-    ld a, [memY + 1]
+    ld b, 0
+    ld a, [SCYS]
     ld c, a
     ld a, b
     or c
@@ -529,23 +581,25 @@ getNextColumnLeft::
     ; Set BC to the screen offset: floor ( Screen position / 8 )
     ld b, 0
     ld c, a
-
     ; Add the screen offset to the VRAM position
     add hl, bc
+    
 
-    ; Load the current number into A
-    ld a, l
-    ; Subtract the offset from HL to see if it must be shifted
-    sub a, $20
+    ; If SCXS == $1F
+    ; Then HL += $20
+    ld a, [SCXS]
+    sub $1F
+    jp nz, .skipAdjust
+    ld a, $20
+    ; Unsigned addition
+    add   a, l    ; A = A+L
+    ld    l, a    ; L = A+L
+    adc   a, h    ; A = A+L+H+carry
+    sub   l       ; A = H+carry
+    ld    h, a    ; H = H+carry
+.skipAdjust:
 
-    ; If the subtraction causes overflow, then we know the register is < 32, and we do not need to subtract from it, in which case we jump.
-    ; If the subtraction does not cause overflow, then we know the register is >= 32, and we need to subtract from it.
-    jp c, .c
-    ; HL minus 20 hex
-    ld a, l
-    sub a, $20
-    ld l, a
-.c:
+
 
     ; Draw the entire column
     jp drawColumn
@@ -572,19 +626,6 @@ drawColumn::
     call setTileForColumn
     call setTileForColumn
     call setTileForColumn
-    /*call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn*/
     ; Ret to code
     ret
 
@@ -634,6 +675,13 @@ setTileForColumn::
     sub l
     ld h, a
 
+    ; If H == 9C, then change it to 98
+    ld a, h
+    sub $9C
+    jp nz, .skip
+    ld h, $98
+.skip:
+
     ; Return to code
     ret
 
@@ -669,6 +717,15 @@ getNextRowDown::
     ld [memY], a
     ld a, c
     ld [memY + 1], a
+    
+    ld a, [rSCY]
+    ; Divide by 8
+    sra a
+    sra a
+    sra a
+    ; Clear bad sign bits
+    and a, %00011111
+    ld [SCYS], a
     
 .skipInc:
 
@@ -847,6 +904,20 @@ getNextRowUp::
     ld a, c
     ld [memY + 1], a
     
+    ld a, [rSCY]
+    ; Divide by 8
+    sra a
+    sra a
+    sra a
+    ; Clear bad sign bits
+    and a, %00011111
+    dec a
+    ld [SCYS], a
+    sub a, $FF
+    jp nz, .skipInc
+    ld a, $1F
+    ld [SCYS], a
+
 .skipInc:
 
     ; Setting DE - Source Tile

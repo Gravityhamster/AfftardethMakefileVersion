@@ -85,6 +85,8 @@ main:
     ld [joypadPressed], a
     ld [SCX], a
     ld [SCY], a
+    ld [SCXS], a
+    ld [SCYS], a
     ld a, $00
     ld [viewTargetX], a
     ld [viewTargetX+1], a
