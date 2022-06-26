@@ -21,28 +21,37 @@ InitStructs::
     ; Init structs
     ld hl, PlayerSprite
     call ldHLToStructAddress
+    ld hl, PlayerMetaspritePrime
+    ld a, h
+    ld [altMetaSprite], a
+    ld a, l
+    ld [altMetaSprite + 1], a
     ld hl, PlayerMetasprite
     ld bc, (0.0 >> 12) & $FFFF
     ld de, (0.0 >> 12) & $FFFF
     call InitSpriteStruct
-    ld hl, EnemySprite1
+
+    /*ld hl, EnemySprite1
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (10.0 >> 12) & $FFFF
     ld de, (10.0 >> 12) & $FFFF
     call InitSpriteStruct
+
     ld hl, EnemySprite2
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (20.0 >> 12) & $FFFF
     ld de, (20.0 >> 12) & $FFFF
     call InitSpriteStruct
+
     ld hl, EnemySprite3
     call ldHLToStructAddress
     ld hl, EnemyMetasprite
     ld bc, (30.0 >> 12) & $FFFF
     ld de, (30.0 >> 12) & $FFFF
-    call InitSpriteStruct
+    call InitSpriteStruct*/
+    
     ret
 
 ; Init player struct
@@ -50,6 +59,7 @@ InitStructs::
 ; @param hl - meta sprite
 ; @param bc - ypos
 ; @param de - xpos
+; @param altMetaSprite - meta sprite prime
 InitSpriteStruct::
     ; Save params
     push de ; xpos
@@ -85,6 +95,14 @@ InitSpriteStruct::
     ; Load XVel data
     ld [hli], a
     ld [hli], a
+    ; Load Dir data
+    ld a, 1
+    ld [hli], a
+    ; Load sprite data
+    ld a, [altMetaSprite]
+    ld [hli], a
+    ld a, [altMetaSprite + 1]
+    ld [hli], a
 
     ret
 
@@ -94,7 +112,7 @@ RenderStructs::
     ld hl, PlayerSprite
     call ldHLToStructAddress
     call RenderSprite
-    ; Enemy sprite 1
+    /*; Enemy sprite 1
     ld hl, EnemySprite1
     call ldHLToStructAddress
     call RenderSprite
@@ -105,7 +123,7 @@ RenderStructs::
     ; Enemy sprite 3
     ld hl, EnemySprite3
     call ldHLToStructAddress
-    call RenderSprite
+    call RenderSprite*/
     ret
 
 ; Load Address into Register HL
@@ -128,13 +146,81 @@ ldHLToStructAddress::
 ; Render Metasprite
 ; @param structAddress
 RenderSprite::
-    ; Get the sprite address
+    ; Get the sprite address ----
+
+    ; Get the direction
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    ld a, [hl] ; read direction
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+
+    ; Check if a is 1 or 0
+    ; 0 - Sprite left (Prime)
+    ; 1 - Sprite right
+    dec a
+    jp z, .reg
+    
+    ; Go to metasprite prime if the dir is 0
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    inc hl
     ld a, [hli]
     ld b, a
     ld a, [hli]
     ld c, a
     or a, b
     jp z, .skip
+    ; Go back to where we should be
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    dec hl
+    jp .skipReg
+
+.reg:
+
+    ; Read regular
+    ld a, [hli]
+    ld b, a
+    ld a, [hli]
+    ld c, a
+    or a, b
+    jp z, .skip
+
+.skipReg:
+
     ; Load HL back to the struct address
     call ldHLToStructAddress
     ; Load the address into HL
@@ -333,6 +419,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 0
+    ld [cancelYVelocity], a
     ld bc, (4.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -408,6 +496,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 0
+    ld [cancelYVelocity], a
     ld bc, (-5.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -493,6 +583,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 0
+    ld [cancelYVelocity], a
     ld bc, (-4.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -558,6 +650,8 @@ applyPlayerVelocity::
     push hl
 
     ; Move and collide
+    ld a, 1
+    ld [cancelYVelocity], a
     ld bc, (-4.0 >> 12) & $FFFF
     ld a, b
     ld [xOffset1], a
@@ -568,12 +662,12 @@ applyPlayerVelocity::
     ld [xOffset2], a
     ld a, c
     ld [xOffset2 + 1], a
-    ld bc, (-15.0 >> 12) & $FFFF
+    ld bc, (-16.0 >> 12) & $FFFF
     ld a, b
     ld [yOffset1], a
     ld a, c
     ld [yOffset1 + 1], a
-    ld bc, (-15.0 >> 12) & $FFFF
+    ld bc, (-16.0 >> 12) & $FFFF
     ld a, b
     ld [yOffset2], a
     ld a, c
@@ -610,7 +704,7 @@ applyPlayerVelocity::
 
     ret
     
-; Set velocities based on certain properties
+; Set velocities based on certain properties - With physics
 setPlayerVelocities::
 
     ; Check joypad right
@@ -618,6 +712,8 @@ setPlayerVelocities::
     and a, %00010000
     jp z, .skipRight
 
+    ld a, 1
+    ld [PlayerSprite_Dir], a
     ; Set velocity to positive one
     ld bc, (1.0 >> 12) & $FFFF
     ld a, b
@@ -632,6 +728,8 @@ setPlayerVelocities::
     and a, %00100000
     jp z, .skipLeft
 
+    ld a, 0
+    ld [PlayerSprite_Dir], a
     ; Set velocity to negative one
     ld bc, (-1.0 >> 12) & $FFFF
     ld a, b
@@ -679,9 +777,133 @@ setPlayerVelocities::
 
     ; Check joypad up
     ld a, [joypadPressed]
-    and a, %01000000
+    and a, %00000001
     jp z, .skipUp
 
+    ; Check if there is a collision
+    ld a, [PlayerSprite + 5]
+    ld c, a
+    ld a, [PlayerSprite + 4]
+    ld b, a
+    ld a, [PlayerSprite + 3]
+    ld e, a
+    ld a, [PlayerSprite + 2]
+    ld d, a
+    ;ld hl, (1.0 >> 12) & $FFFF
+    ;add hl, de
+    ;ld e, l
+    ;ld d, h
+    ; Bit shift BC right - This is a 16 bit number 1st digit - (0000 0000 0000) . (0000) 
+    ; So in order to cut off the decimal, we have to bit shift four places to the right
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ; Bit shift DE right
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    ; Call collision code
+    call CheckCollision
+    dec a
+    jp z, .doIt
+
+    ; Check if there is a collision
+    ld a, [PlayerSprite + 5]
+    ld c, a
+    ld a, [PlayerSprite + 4]
+    ld b, a
+    ld a, [PlayerSprite + 3]
+    ld e, a
+    ld a, [PlayerSprite + 2]
+    ld d, a
+    ;ld hl, (1.0 >> 12) & $FFFF
+    ;add hl, de
+    ;ld e, l
+    ;ld d, h
+    ; Bit shift BC right - This is a 16 bit number 1st digit - (0000 0000 0000) . (0000) 
+    ; So in order to cut off the decimal, we have to bit shift four places to the right
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ; Bit shift DE right
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    ; Add to get the bottom right corner
+    inc bc
+    inc bc
+    inc bc
+    ; Call collision code
+    call CheckCollision
+    dec a
+    jp z, .doIt
+
+    ; Check if there is a collision
+    ld a, [PlayerSprite + 5]
+    ld c, a
+    ld a, [PlayerSprite + 4]
+    ld b, a
+    ld a, [PlayerSprite + 3]
+    ld e, a
+    ld a, [PlayerSprite + 2]
+    ld d, a
+    ;ld hl, (1.0 >> 12) & $FFFF
+    ;add hl, de
+    ;ld e, l
+    ;ld d, h
+    ; Bit shift BC right - This is a 16 bit number 1st digit - (0000 0000 0000) . (0000) 
+    ; So in order to cut off the decimal, we have to bit shift four places to the right
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    sra b
+    rr c
+    ; Bit shift DE right
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    sra d
+    rr e   
+    ; Add to get the bottom right corner
+    dec bc
+    dec bc
+    dec bc
+    dec bc
+    ; Call collision code
+    call CheckCollision
+    dec a
+    jp z, .doIt
+    
+    ; If no collision, skip
+    jp .skipUp
+
+.doIt:
     ; Set velocity to negative one
     ld bc, (-3.0 >> 12) & $FFFF
     ld a, b
@@ -691,10 +913,6 @@ setPlayerVelocities::
 
 .skipUp:
     
-    ;; Set the focal point of the camera
-    ;call getPlayerFocusPointY
-    ;call getPlayerFocusPointX
-
     call applyPlayerVelocity
 
     ; Reset velocities
@@ -738,6 +956,99 @@ setPlayerVelocities::
     call resetGravityYVel
 
     ret
+
+
+    ; Check collision and if there is collision, then reset YVel
+
+
+
+/*
+; DELETE FROM THIS POINT -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+; Set velocities based on certain properties - Without physics
+setPlayerVelocities::
+
+    ; Check joypad right
+    ld a, [joypadState]
+    and a, %00010000
+    jp z, .skipRight
+
+    ld a, 1
+    ld [PlayerSprite_Dir], a
+    ;ld de, PlayerSprite_XVel
+    ld bc, (1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_XVel], a
+    ld a, c
+    ld [PlayerSprite_XVel + 1], a
+    ;call AddToMemory16Bit
+
+.skipRight:
+
+    ; Check joypad left
+    ld a, [joypadState]
+    and a, %00100000
+    jp z, .skipLeft
+
+    ld a, 0
+    ld [PlayerSprite_Dir], a
+    ;ld de, PlayerSprite_XPos
+    ld bc, (-1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_XVel], a
+    ld a, c
+    ld [PlayerSprite_XVel + 1], a
+    ;call AddToMemory16Bit
+
+.skipLeft:
+
+    ; Check joypad down
+    ld a, [joypadState]
+    and a, %10000000
+    jp z, .skipDown
+
+    ;ld de, PlayerSprite_YPos
+    ld bc, (1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_YVel], a
+    ld a, c
+    ld [PlayerSprite_YVel + 1], a
+    ;call AddToMemory16Bit
+
+.skipDown:
+
+    ; Check joypad up
+    ld a, [joypadState]
+    and a, %01000000
+    jp z, .skipUp
+
+    ;ld de, PlayerSprite_YPos
+    ld bc, (-1.0 >> 12) & $FFFF
+    ld a, b
+    ld [PlayerSprite_YVel], a
+    ld a, c
+    ld [PlayerSprite_YVel + 1], a
+    ;call AddToMemory16Bit
+
+.skipUp:
+
+    call applyPlayerVelocity
+
+    ; Reset velocities
+    ld a, 0
+    ld [PlayerSprite_XVel], a
+    ld [PlayerSprite_XVel + 1], a
+    ld [PlayerSprite_YVel], a
+    ld [PlayerSprite_YVel + 1], a
+
+    call getPlayerFocusPointX
+    call getPlayerFocusPointY
+
+    ret
+
+
+; DELETE TO THIS POINT -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+*/
 
 ; Check collision and if there is collision, then reset YVel
 ; @param xamnt -    16-bit floating point
@@ -1157,12 +1468,13 @@ moveCollideThreePoint:
 
 
 ; Check collision and move
-; @param xamnt -    16-bit floating point
-; @param yamnt -    16-bit floating point
-; @param xOffset1 - 16-bit floating point
-; @param yOffset1 - 16-bit floating point
-; @param xOffset2 - 16-bit floating point
-; @param yOffset2 - 16-bit floating point
+; @param cancelYVelocity - 8-bit flag to determine whether we cancel velocity or not
+; @param xamnt           - 16-bit floating point
+; @param yamnt           - 16-bit floating point
+; @param xOffset1        - 16-bit floating point
+; @param yOffset1        - 16-bit floating point
+; @param xOffset2        - 16-bit floating point
+; @param yOffset2        - 16-bit floating point
 moveCollideTwoPoint:
 
     ; Get the address of the current structure
@@ -1235,7 +1547,7 @@ moveCollideTwoPoint:
 
     ; Check if a = 1
     cp a, 1
-    jp z, .skip
+    jp z, .maybeCancel
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -1300,7 +1612,7 @@ moveCollideTwoPoint:
 
     ; Check if a = 1
     cp a, 1
-    jp z, .skip
+    jp z, .maybeCancel
 
     ; Every time we access the struct, we need to reload HL if it has been overwritten. Then we need to transform it:
     call ldStructAddressToHL
@@ -1335,11 +1647,23 @@ moveCollideTwoPoint:
     ld a, [yamnt + 1]
     ld c, a
     call AddToMemory16Bit
+    jp .skip
+
+.maybeCancel:
+    ld a, [cancelYVelocity] ; Get cancel yes or no
+    dec a
+    ; If zero, stop flag is on. If stop flag is on, then we should reset the yvel, otherwise, skip 
+    jp nz, .skip
+    
+    ; Reset player speed
+    ld a, 0
+    ld [PlayerSprite_YVel], a 
+    ld [PlayerSprite_YVel + 1], a 
 
 .skip:
     ret
 
-; Focus on the player
+/*; Focus on the player
 getPlayerFocusPointY:
     
     ld a, [PlayerSprite_YPos]
@@ -1391,6 +1715,68 @@ getPlayerFocusPointY:
     ld a, 0
 .skip:
     ld [viewTargetY], a
+
+    ret*/
+
+    
+
+; Focus on the player
+getPlayerFocusPointY:
+    
+    ld a, [PlayerSprite_YPos]
+    ld h, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld l, a
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    ; If h is 0F and l is FX, then set 0
+    ld a, l
+    cp a, $F0
+    jp c, .doNotTestH
+    ld a, h
+    cp a, $0F
+    jp z, .setZero
+.doNotTestH
+    ; If h is zero, then we need to test
+    ld a, h
+    add a, 0
+    jp nz, .skipTest
+    ; Test if a - 72 is going to cause a negative
+    ld a, l
+    cp a, 80
+    jp c, .setZero
+.skipTest:
+    ld a, [PlayerSprite_YPos]
+    ld h, a
+    ld a, [PlayerSprite_YPos + 1]
+    ld l, a
+    ld bc, (-80.0 >> 12) & $FFFF
+    add hl, bc
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    sra h
+    rr l
+    jp .skip
+.setZero:
+    ld a, 0
+    ld h, a
+    ld a, 0
+    ld l, a
+.skip:
+    ld a, h
+    ld [viewTargetY], a
+    ld a, l
+    ld [viewTargetY + 1], a
 
     ret
 

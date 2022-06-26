@@ -4,8 +4,8 @@ INCLUDE "hardware.inc"
 SECTION "Collision Functions", ROM0
 
 ; This function receives a point and returns the ID for the collision type
-; @param bc - x
-; @param de - y
+; @param bc - x (NOT decimal)
+; @param de - y (NOT decimal)
 ; @param currentCollisionMap
 ; @returns a - Tile collision type ID
 CheckCollision::

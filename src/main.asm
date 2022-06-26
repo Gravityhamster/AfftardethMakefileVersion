@@ -58,28 +58,40 @@ main:
     ; Set WRAM
     ld a, $00
     ld [prevX], a
+    ld [prevY], a
     ld [YOffset], a
     ld [YOffset+1], a
     ld [XOffset], a
     ld [XOffset+1], a
     ld [mapX], a
     ld [mapX+1], a
+    ld [mapY], a
+    ld [mapY+1], a
     ld [maxX], a
     ld [maxX+1], a
+    ld [maxY], a
+    ld [maxY+1], a
     ld [memX], a
     ld [memX+1], a
+    ld [memY], a
+    ld [memY+1], a    
     ld [pixX], a
     ld [pixX+1], a
+    ld [pixY], a
+    ld [pixY+1], a
     ld [drawOffset], a
     ld [universalCounter], a
     ld [joypadState], a
     ld [joypadPressed], a
     ld [SCX], a
     ld [SCY], a
+    ld [SCXS], a
+    ld [SCYS], a
     ld a, $00
     ld [viewTargetX], a
     ld [viewTargetX+1], a
     ld [viewTargetY], a
+    ld [viewTargetY+1], a
 
     ; Initialize all sprite structs
     call InitStructs

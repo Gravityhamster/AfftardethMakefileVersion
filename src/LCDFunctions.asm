@@ -32,8 +32,8 @@ enableLCD::
 ; Set color palette - Sets the palette of the screen to %11100100
 loadPalette::
     ld a, %11100100
+    ; ld a, %11010010
     ld [rBGP], a
-    ld a, %11100100
     ld [rOBP0], a
     ; Return to code
     ret 
@@ -45,7 +45,7 @@ copyGrassyTiles::
     ld bc, GrassyTiles.end - GrassyTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
     jp memcpy
-        
+  
 ; Copy sprite tiles into registers to be loaded
 copySpriteTiles::
     ld de, SpriteTiles
@@ -54,6 +54,7 @@ copySpriteTiles::
     ; Push copied tileset to VRAM
     jp memcpy
 
+    /*
 ; Copy HillSide tile map into registers to be loaded
 copyHillSideMap::
     ld de, HillSideTilemap
@@ -69,6 +70,7 @@ copyHillMiddleMap::
     ld bc, HillMiddleTilemap.end - HillMiddleTilemap ; We set bc to the amount of bytes to copy
     ; Push copied tilemap to VRAM
     jp memcpy 
+    */
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap::
@@ -85,14 +87,26 @@ copyNewHillExtMap::
     ld hl, $9800
     ; Define map dims
     ld a, $00
-    ld [mapX], a
+    ld [mapX], a ; Units
     ld a, $40
     ld [mapX+1], a
+    ; To calculate pixel width do : (mapX * 8) - ($14 * 8)
     ld a, $01
-    ld [maxX], a
+    ld [maxX], a ; Pixels
     ld a, $60
     ld [maxX+1], a
+
+    ld a, $00
+    ld [mapY], a ; Units
+    ld a, $40
+    ld [mapY+1], a
+    ; To calculate pixel width do : (mapX * 8) - ($12 * 8)
+    ld a, $01
+    ld [maxY], a ; Pixels
+    ld a, $70
+    ld [maxY+1], a
     ; Push copied tilemap to VRAM
+    ;ret
     jp pLoadExtendedMap
 
 ; Loads the copied ext tilemap into VRAM - Loads the map into the VRAM at $9800
