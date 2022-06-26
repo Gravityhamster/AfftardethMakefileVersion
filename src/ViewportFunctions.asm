@@ -340,7 +340,7 @@ getNextColumnRight::
     ld a, c
     ld [memX + 1], a
     
-    ld a, [rSCX]
+    ld a, [SCX]
     ; Divide by 8
     sra a
     sra a
@@ -484,7 +484,7 @@ getNextColumnLeft::
     ld a, c
     ld [memX + 1], a
     
-    ld a, [rSCX]
+    ld a, [SCX]
     ; Divide by 8
     sra a
     sra a
@@ -718,7 +718,7 @@ getNextRowDown::
     ld a, c
     ld [memY + 1], a
     
-    ld a, [rSCY]
+    ld a, [SCY]
     ; Divide by 8
     sra a
     sra a
@@ -904,7 +904,7 @@ getNextRowUp::
     ld a, c
     ld [memY + 1], a
     
-    ld a, [rSCY]
+    ld a, [SCY]
     ; Divide by 8
     sra a
     sra a

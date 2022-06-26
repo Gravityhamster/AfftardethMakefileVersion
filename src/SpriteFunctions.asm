@@ -705,7 +705,6 @@ applyPlayerVelocity::
     ret
     
 ; Set velocities based on certain properties - With physics
-/*
 setPlayerVelocities::
 
     ; Check joypad right
@@ -960,8 +959,10 @@ setPlayerVelocities::
 
 
     ; Check collision and if there is collision, then reset YVel
-*/
 
+
+
+/*
 ; DELETE FROM THIS POINT -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ; Set velocities based on certain properties - Without physics
@@ -1047,7 +1048,7 @@ setPlayerVelocities::
 
 
 ; DELETE TO THIS POINT -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+*/
 
 ; Check collision and if there is collision, then reset YVel
 ; @param xamnt -    16-bit floating point
