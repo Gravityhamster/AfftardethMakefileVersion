@@ -45,7 +45,7 @@ copyGrassyTiles::
     ld bc, GrassyTiles.end - GrassyTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
     jp memcpy
-        
+  
 ; Copy sprite tiles into registers to be loaded
 copySpriteTiles::
     ld de, SpriteTiles
@@ -54,6 +54,7 @@ copySpriteTiles::
     ; Push copied tileset to VRAM
     jp memcpy
 
+    /*
 ; Copy HillSide tile map into registers to be loaded
 copyHillSideMap::
     ld de, HillSideTilemap
@@ -69,6 +70,7 @@ copyHillMiddleMap::
     ld bc, HillMiddleTilemap.end - HillMiddleTilemap ; We set bc to the amount of bytes to copy
     ; Push copied tilemap to VRAM
     jp memcpy 
+    */
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap::
@@ -88,6 +90,7 @@ copyNewHillExtMap::
     ld [mapX], a ; Units
     ld a, $40
     ld [mapX+1], a
+    ; To calculate pixel width do : (mapX * 8) - ($14 * 8)
     ld a, $01
     ld [maxX], a ; Pixels
     ld a, $60
@@ -97,6 +100,7 @@ copyNewHillExtMap::
     ld [mapY], a ; Units
     ld a, $40
     ld [mapY+1], a
+    ; To calculate pixel width do : (mapX * 8) - ($12 * 8)
     ld a, $01
     ld [maxY], a ; Pixels
     ld a, $70

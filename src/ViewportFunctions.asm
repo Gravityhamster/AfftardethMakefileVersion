@@ -1052,6 +1052,13 @@ getNextRowUp::
 
     dec hl
 
+    ; If the draw target is at $97, we don't want to draw there. We want to draw at $9B instead. Watch:
+    ld a, h
+    sub $97
+    jp nz, .skip97Check
+    ld h, $9B
+.skip97Check:
+
     ; Draw the entire column
     jp drawRow
 

@@ -974,9 +974,13 @@ setPlayerVelocities::
 
     ld a, 1
     ld [PlayerSprite_Dir], a
-    ld de, PlayerSprite_XPos
+    ;ld de, PlayerSprite_XVel
     ld bc, (1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [PlayerSprite_XVel], a
+    ld a, c
+    ld [PlayerSprite_XVel + 1], a
+    ;call AddToMemory16Bit
 
 .skipRight:
 
@@ -987,9 +991,13 @@ setPlayerVelocities::
 
     ld a, 0
     ld [PlayerSprite_Dir], a
-    ld de, PlayerSprite_XPos
+    ;ld de, PlayerSprite_XPos
     ld bc, (-1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [PlayerSprite_XVel], a
+    ld a, c
+    ld [PlayerSprite_XVel + 1], a
+    ;call AddToMemory16Bit
 
 .skipLeft:
 
@@ -998,9 +1006,13 @@ setPlayerVelocities::
     and a, %10000000
     jp z, .skipDown
 
-    ld de, PlayerSprite_YPos
+    ;ld de, PlayerSprite_YPos
     ld bc, (1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [PlayerSprite_YVel], a
+    ld a, c
+    ld [PlayerSprite_YVel + 1], a
+    ;call AddToMemory16Bit
 
 .skipDown:
 
@@ -1009,11 +1021,24 @@ setPlayerVelocities::
     and a, %01000000
     jp z, .skipUp
 
-    ld de, PlayerSprite_YPos
+    ;ld de, PlayerSprite_YPos
     ld bc, (-1.0 >> 12) & $FFFF
-    call AddToMemory16Bit
+    ld a, b
+    ld [PlayerSprite_YVel], a
+    ld a, c
+    ld [PlayerSprite_YVel + 1], a
+    ;call AddToMemory16Bit
 
 .skipUp:
+
+    call applyPlayerVelocity
+
+    ; Reset velocities
+    ld a, 0
+    ld [PlayerSprite_XVel], a
+    ld [PlayerSprite_XVel + 1], a
+    ld [PlayerSprite_YVel], a
+    ld [PlayerSprite_YVel + 1], a
 
     call getPlayerFocusPointX
     call getPlayerFocusPointY
