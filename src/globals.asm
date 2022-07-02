@@ -48,6 +48,11 @@ GrassyTiles::
     INCBIN "res/GrassyTiles.2bpp"
     .end::
 
+; Grassy tile data
+DungeonTiles::
+    INCBIN "res/DungeonTiles.2bpp"
+    .end::
+
 ; Sprite tile data
 SpriteTiles::
     INCBIN "res/SpriteTiles.2bpp"
@@ -99,12 +104,6 @@ viewTargetX::
 viewTargetY::
     ds 2
 
-; Last view position
-prevX::
-    ds 1
-prevY::
-    ds 1
-
 ; Struct references - Must be indented
     dstruct metaSpriteTemplate, PlayerSprite
     dstruct metaSpriteTemplate, EnemySprite1
@@ -116,10 +115,6 @@ YOffset::
     ds 2
 XOffset::
     ds 2
-
-; Q12.4 fixed-point X posiition
-MetaspritePosition::
-    dw
 
 ; 1-byte
 SCX::

@@ -57,8 +57,6 @@ main:
 
     ; Set WRAM
     ld a, $00
-    ld [prevX], a
-    ld [prevY], a
     ld [YOffset], a
     ld [YOffset+1], a
     ld [XOffset], a

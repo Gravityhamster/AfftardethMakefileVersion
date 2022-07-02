@@ -37,14 +37,6 @@ loadPalette::
     ld [rOBP0], a
     ; Return to code
     ret 
-        
-; Copy grassy tiles into registers to be loaded
-copyGrassyTiles::
-    ld de, GrassyTiles
-    ld hl, $9000
-    ld bc, GrassyTiles.end - GrassyTiles ; We set bc to the amount of bytes to copy
-    ; Push copied tileset to VRAM
-    jp memcpy
   
 ; Copy sprite tiles into registers to be loaded
 copySpriteTiles::
@@ -71,43 +63,6 @@ copyHillMiddleMap::
     ; Push copied tilemap to VRAM
     jp memcpy 
     */
-
-; Copy HillsMapTilemap into registers to be loaded
-copyNewHillExtMap::
-    ld de, HillsMapCollisionMap
-    ld a, d
-    ld [currentCollisionMap], a
-    ld a, e
-    ld [currentCollisionMap + 1], a
-    ld de, HillsMapTilemap
-    ld a, d
-    ld [currentTileMap], a
-    ld a, e
-    ld [currentTileMap + 1], a
-    ld hl, $9800
-    ; Define map dims
-    ld a, $00
-    ld [mapX], a ; Units
-    ld a, $40
-    ld [mapX+1], a
-    ; To calculate pixel width do : (mapX * 8) - ($14 * 8)
-    ld a, $01
-    ld [maxX], a ; Pixels
-    ld a, $60
-    ld [maxX+1], a
-
-    ld a, $00
-    ld [mapY], a ; Units
-    ld a, $40
-    ld [mapY+1], a
-    ; To calculate pixel width do : (mapX * 8) - ($12 * 8)
-    ld a, $01
-    ld [maxY], a ; Pixels
-    ld a, $70
-    ld [maxY+1], a
-    ; Push copied tilemap to VRAM
-    ;ret
-    jp pLoadExtendedMap
 
 ; Loads the copied ext tilemap into VRAM - Loads the map into the VRAM at $9800
 ; NEVER CALL THIS FUNCTION DIRECTLY

@@ -60,9 +60,6 @@ MoveViewRight::
 ;    call nz, getNextColumnRight
     call getNextColumnRight
 
-    ld a, [SCX]
-    ld [prevX], a
-
 .skip1:
 
 ;    ld a, [joypadState]
@@ -203,9 +200,6 @@ MoveViewDown::
     
     call getNextRowDown
 
-    ld a, [SCY]
-    ld [prevY], a
-
 .skip1:
 
     ; Increment view
@@ -281,9 +275,6 @@ MoveViewUp::
     jp nz, .skip1 ; Skip the column drawing code if not zero
     
     call getNextRowUp
-
-    ld a, [SCY]
-    ld [prevY], a
 
 .skip1:
 
@@ -732,7 +723,10 @@ getNextRowDown::
     ; Setting DE - Source Tile
 
     ; Load the location into DE
-    ld de, HillsMapTilemap
+    ld a, [currentTileMap]
+    ld d, a
+    ld a, [currentTileMap + 1]
+    ld e, a
     ; de += mapX * 18 
     ld h, d
     ld l, e
@@ -923,7 +917,10 @@ getNextRowUp::
     ; Setting DE - Source Tile
 
     ; Load the location into DE
-    ld de, HillsMapTilemap
+    ld a, [currentTileMap]
+    ld d, a
+    ld a, [currentTileMap + 1]
+    ld e, a
 
     ; Load memY into BC
     ld a, [memY]
