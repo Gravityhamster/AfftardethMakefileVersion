@@ -11,6 +11,7 @@ copyGrassyTiles::
 
 ; Copy HillsMapTilemap into registers to be loaded
 copyNewHillExtMap::
+    call copyGrassyTiles
     ld de, HillsMapCollisionMap
     ld a, d
     ld [currentCollisionMap], a
@@ -43,8 +44,8 @@ copyNewHillExtMap::
     ld a, $70
     ld [maxY+1], a
     ; Push copied tilemap to VRAM
-    ret
-    ;jp pLoadExtendedMap
+    ;ret
+    jp pLoadExtendedMap
 
 ; First hills data
 ; 64 x 64

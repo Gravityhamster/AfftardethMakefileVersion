@@ -97,14 +97,12 @@ main:
     ; Turn off the LCD
     call disableLCD
 
-    ; Load the tileset into the registers and move to VRAM
-    call copyGrassyTiles
-
     ; Load the sprite tileset into the registers and move to VRAM
     call copySpriteTiles
 
     ; Load the tilemap into the registers and move to VRAM
-    call copyNewHillExtMap
+    ;call copyNewHillExtMap
+    call copyDungeonTilemapExtMap
     call DecompressDungeonTiles
 
     ; Load the palette

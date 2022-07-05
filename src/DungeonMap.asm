@@ -1,5 +1,5 @@
-/*; Sample tile map data
-SECTION "Dungeonmap", ROM0
+; Sample tile map data
+SECTION "Dungeonmap", ROMX
         
 ; Copy grassy tiles into registers to be loaded
 copyDungeonTiles::
@@ -8,6 +8,44 @@ copyDungeonTiles::
     ld bc, DungeonTiles.end - DungeonTiles ; We set bc to the amount of bytes to copy
     ; Push copied tileset to VRAM
     jp memcpy
+
+; Copy HillsMapTilemap into registers to be loaded
+copyDungeonTilemapExtMap::
+    call copyDungeonTiles
+    ld de, HillsMapCollisionMap
+    ld a, d
+    ld [currentCollisionMap], a
+    ld a, e
+    ld [currentCollisionMap + 1], a
+    ld de, DungeonTilemap
+    ld a, d
+    ld [currentTileMap], a
+    ld a, e
+    ld [currentTileMap + 1], a
+    ld hl, $9800
+    ; Define map dims
+    ld a, $00
+    ld [mapX], a ; Units
+    ld a, $40
+    ld [mapX+1], a
+    ; To calculate pixel width do : (mapX * 8) - ($14 * 8)
+    ld a, $01
+    ld [maxX], a ; Pixels
+    ld a, $60
+    ld [maxX+1], a
+
+    ld a, $00
+    ld [mapY], a ; Units
+    ld a, $40
+    ld [mapY+1], a
+    ; To calculate pixel width do : (mapX * 8) - ($12 * 8)
+    ld a, $01
+    ld [maxY], a ; Pixels
+    ld a, $70
+    ld [maxY+1], a
+    ; Push copied tilemap to VRAM
+    ret
+    ;jp pLoadExtendedMap
 
 ; 32 x 64
 DungeonTilemap::
@@ -44,7 +82,7 @@ DungeonTilemap::
     db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $6D, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $34, $65, $2A, $2A, $65, $36, $50, $20, $37, $06, $37, $37, $11, $14, $14, $14, $14, $14, $14, $12, $37, $37, $06, $37, $20, $50, $34, $65, $2A, $2A, $65, $36, 
     db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $44, $45, $45, $45, $45, $46, $20, $50, $20, $37, $11, $14, $14, $14, $14, $14, $14, $14, $14, $14, $14, $12, $37, $20, $50, $20, $44, $45, $45, $45, $45, $46, 
 .end::
-*/
+
 /*
 DungeonCollisionMap::
 

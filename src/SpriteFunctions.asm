@@ -745,7 +745,7 @@ setPlayerVelocities::
     ;jp z, .skipDown
 
     ; Set velocity to positive one
-    ld bc, (0.2 >> 12) & $FFFF
+    ld bc, (0.15 >> 12) & $FFFF
     
     ; Test if an addition should happen
     ld a, [PlayerSprite_YVel]

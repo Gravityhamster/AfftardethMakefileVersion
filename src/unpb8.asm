@@ -1,13 +1,12 @@
 SECTION "Decompress PB8", ROM0
 DecompressDungeonTiles::
 
-	; Copy 1bpp font, compressed using PB8 by PinoBatch
 	ld b,b
 	ld hl, DungeonBinaryMap
 	ld de, $9800
 INCLUDE "res/DungeonBinary.bin.pb8.size"
-	;ld c, NB_PB8_BLOCKS
-	;PURGE NB_PB8_BLOCKS
+	ld c, NB_PB8_BLOCKS
+	PURGE NB_PB8_BLOCKS
 .pb8BlockLoop:
 	; Register map for PB8 decompression
 	; HL: source address in boot ROM
