@@ -43,8 +43,8 @@ copyNewHillExtMap::
     ld a, $70
     ld [maxY+1], a
     ; Push copied tilemap to VRAM
-    ;ret
-    jp pLoadExtendedMap
+    ret
+    ;jp pLoadExtendedMap
 
 ; First hills data
 ; 64 x 64

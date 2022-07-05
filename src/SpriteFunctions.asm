@@ -1,6 +1,6 @@
 INCLUDE "hardware.inc"
 
-SECTION "Sprite Functions", ROM0
+SECTION "Sprite Functions", ROMX
 ; ----------------
 ; Sprite functions
 ; ----------------

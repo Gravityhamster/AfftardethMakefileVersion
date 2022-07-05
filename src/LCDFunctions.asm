@@ -1,7 +1,7 @@
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
 
-SECTION "LCD Functions", ROM0
+SECTION "LCD Functions", ROMX
 
 ; -------------------------------------
 ; Functions definitions - LCD Functions 

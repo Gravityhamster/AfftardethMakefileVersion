@@ -105,6 +105,7 @@ main:
 
     ; Load the tilemap into the registers and move to VRAM
     call copyNewHillExtMap
+    call DecompressDungeonTiles
 
     ; Load the palette
     call loadPalette

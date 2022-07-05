@@ -1,7 +1,7 @@
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
 
-SECTION "Viewport Functions", ROM0
+SECTION "Viewport Functions", ROMX
 
 ; -----------------------------------------
 ; Function definitions - Viewport Functions
@@ -598,25 +598,13 @@ getNextColumnLeft::
 ; Draw a column at HL
 drawColumn::
     ; TODO: Add a proper loop so that this takes up less space in ROM
+    ld bc, 19
+.loop:
     call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
-    call setTileForColumn
+    dec bc
+    ld a, b
+    or c
+    jp nz, .loop
     ; Ret to code
     ret
 

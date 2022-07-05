@@ -1,7 +1,7 @@
 ; Pre-made hardware interface
 INCLUDE "hardware.inc"
 
-SECTION "Collision Functions", ROM0
+SECTION "Collision Functions", ROMX
 
 ; This function receives a point and returns the ID for the collision type
 ; @param bc - x (NOT decimal)

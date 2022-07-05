@@ -8,7 +8,7 @@ A Gameboy ASM Project
 - RGBDS Documentation
 - The Pan Docs
 - eldred.fr GB ASM Tutorial
-- ISSOtm for boilerplate and structs
+- ISSOtm for boilerplate, structs, and ISStm+PinoBatch's compression
 - Eievui's direct help: Thank you!
 
 # Included Resources Used

@@ -1,6 +1,6 @@
 INCLUDE "hardware.inc"
 
-SECTION "Joypad Functions", ROM0
+SECTION "Joypad Functions", ROMX
 
 ; ---------------------------------------
 ; Function definitions - Joypad Functions

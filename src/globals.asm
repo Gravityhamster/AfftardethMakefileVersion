@@ -14,7 +14,7 @@ INCLUDE "structs.inc"
     end_struct
 
 
-SECTION "Hard Globals", ROM0
+SECTION "Hard Globals", ROMX
 
 /*; Meta sprite 8x8:
 PlayerMetasprite::
@@ -41,7 +41,12 @@ EnemyMetasprite::
     db 128
 
 ; Tile sets
-SECTION "Graphics", ROM0
+SECTION "Graphics", ROMX
+
+; Dungeon tile map data
+DungeonBinaryMap::
+    INCBIN "res/DungeonBinary.bin.pb8"
+    .end::
 
 ; Grassy tile data
 GrassyTiles::
@@ -58,7 +63,7 @@ SpriteTiles::
     INCBIN "res/SpriteTiles.2bpp"
     .end::
 
-SECTION "Globals", WRAM0
+SECTION "Globals", WRAMX
 
 ; -------------------------------------------------------------------------------
 ; Work variables
