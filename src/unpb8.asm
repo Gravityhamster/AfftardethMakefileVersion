@@ -5,7 +5,11 @@ DecompressDungeonTiles::
 	ld hl, DungeonBinaryMap
 	ld de, $9800
 INCLUDE "res/DungeonBinary.bin.pb8.size"
-	ld c, NB_PB8_BLOCKS
+	ld bc, NB_PB8_BLOCKS
+	ld a, b
+	ld [PB8Size], a
+	ld a, c
+	ld [PB8Size + 1], a
 	PURGE NB_PB8_BLOCKS
 .pb8BlockLoop:
 	; Register map for PB8 decompression
@@ -37,6 +41,20 @@ INCLUDE "res/DungeonBinary.bin.pb8.size"
 	sla b
 	jr nz, .pb8BitLoop
 
-	dec c
+	; dec c	
+	push bc
+	ld a, [PB8Size]
+	ld b, a
+	ld a, [PB8Size + 1]
+	ld c, a
+	dec bc
+	ld a, b
+	ld [PB8Size], a
+	ld a, c
+	ld [PB8Size + 1], a
+	; Check value for 0
+	ld a, b
+	or c
+	pop bc
 	jr nz, .pb8BlockLoop
 	ret

@@ -99,6 +99,10 @@ currentTileMap::
 currentCollisionMap::
     ds 2
 
+; Size amount (2 Bytes)
+PB8Size::
+    ds 2
+
 ; Structure addres
 structAddress::
     ds 2
