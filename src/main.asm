@@ -101,9 +101,9 @@ main:
     call copySpriteTiles
 
     ; Load the tilemap into the registers and move to VRAM
-    ;call copyNewHillExtMap
     call copyDungeonTilemapExtMap
-    call DecompressDungeonTiles
+    call copyNewHillExtMap
+    ;call DecompressDungeonTiles
 
     ; Load the palette
     call loadPalette

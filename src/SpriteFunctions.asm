@@ -715,7 +715,7 @@ setPlayerVelocities::
     ld a, 1
     ld [PlayerSprite_Dir], a
     ; Set velocity to positive one
-    ld bc, (1.0 >> 12) & $FFFF
+    ld bc, (1.5 >> 12) & $FFFF
     ld a, b
     ld [PlayerSprite_XVel], a
     ld a, c
@@ -731,7 +731,7 @@ setPlayerVelocities::
     ld a, 0
     ld [PlayerSprite_Dir], a
     ; Set velocity to negative one
-    ld bc, (-1.0 >> 12) & $FFFF
+    ld bc, (-1.5 >> 12) & $FFFF
     ld a, b
     ld [PlayerSprite_XVel], a
     ld a, c
@@ -905,7 +905,7 @@ setPlayerVelocities::
 
 .doIt:
     ; Set velocity to negative one
-    ld bc, (-3.0 >> 12) & $FFFF
+    ld bc, (-2.75 >> 12) & $FFFF
     ld a, b
     ld [PlayerSprite_YVel], a
     ld a, c
